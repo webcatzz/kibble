@@ -1,6 +1,14 @@
 use super::Vec2;
 
 /// A transformation matrix.
+///
+/// Transforms are constructed by mutating the identity transform, e.g.:
+///
+/// ```
+/// # use std::f32::consts::PI;
+/// # use kibble::math::Transform;
+/// let transform = Transform::IDENTITY.rotated(PI);
+/// ```
 #[derive(Clone, Copy, PartialEq)]
 pub struct Transform {
 	m11: f32, m12: f32,
@@ -11,35 +19,35 @@ pub struct Transform {
 impl Transform {
 
 	/// The identity transform.
-	pub const ID: Self = Self {
+	pub const IDENTITY: Self = Self {
 		m11: 1.0, m12: 0.0,
 		m21: 0.0, m22: 1.0,
 		translation: Vec2::ZERO,
 	};
 
-	/// Returns a transform with added rotation.
+	/// Returns the transform with added rotation, in radians.
 	pub fn rotated(mut self, by: f32) -> Self {
-		self.m11 *= by.cos();
+		self.m11 *=  by.cos();
 		self.m12 *= -by.sin();
-		self.m21 *= by.sin();
-		self.m22 *= by.cos();
+		self.m21 *=  by.sin();
+		self.m22 *=  by.cos();
 		self
 	}
 
-	/// Returns a transform with added scale.
+	/// Returns the transform with added scale.
 	pub fn scaled(mut self, by: Vec2<f32>) -> Self {
 		self.m11 *= by.x;
 		self.m22 *= by.y;
 		self
 	}
 
-	/// Returns a transform with added shear.
+	/// Returns the transform with added shear.
 	pub fn sheared(mut self, by: f32) -> Self {
 		self.m12 *= by;
 		self
 	}
 
-	/// Returns a transform with added translation.
+	/// Returns the transform with added translation.
 	pub fn translated(mut self, by: Vec2<f32>) -> Self {
 		self.translation += by;
 		self
@@ -57,18 +65,27 @@ impl Transform {
 	}
 
 	/// Returns the translation of a transform.
-	pub fn translation(&self) -> Vec2<f32> {
+	pub fn translation(self) -> Vec2<f32> {
 		self.translation
 	}
 
-	/// Returns true if the given transform only encodes a translation.
-	pub fn is_translation(&self) -> bool {
+	/// Returns `true` if the transform only encodes a translation.
+	///
+	/// # Examples
+	///
+	/// ```
+	/// # use kibble::math::{Transform, Vec2};
+	/// let transform = Transform::IDENTITY.translated(Vec2::of(4.0));
+	/// assert_eq!(transform.is_translation(), true);
+	/// assert_eq!(transform.scaled(Vec2::of(2.0)).is_translation(), false);
+	/// ```
+	pub fn is_translation(self) -> bool {
 		self.m11 == 1.0 && self.m12 == 0.0 &&
 		self.m21 == 0.0 && self.m22 == 1.0
 	}
 
 	/// Transforms a point without translating it.
-	pub fn multiply(&self, vector: Vec2<f32>) -> Vec2<f32> {
+	pub fn multiply(self, vector: Vec2<f32>) -> Vec2<f32> {
 		Vec2 {
 			x: self.m11 * vector.x + self.m12 * vector.y,
 			y: self.m21 * vector.x + self.m22 * vector.y,
@@ -76,7 +93,7 @@ impl Transform {
 	}
 
 	/// Transforms a point.
-	pub fn transform(&self, vector: Vec2<f32>) -> Vec2<f32> {
+	pub fn transform(self, vector: Vec2<f32>) -> Vec2<f32> {
 		self.multiply(vector) + self.multiply(self.translation)
 	}
 
@@ -85,7 +102,7 @@ impl Transform {
 impl Default for Transform {
 
 	fn default() -> Self {
-		Self::ID
+		Self::IDENTITY
 	}
 
 }

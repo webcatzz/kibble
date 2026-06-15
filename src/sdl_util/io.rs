@@ -5,8 +5,8 @@ use std::mem::size_of;
 use std::ptr::{self, NonNull};
 use std::slice;
 use sdl3_sys::iostream::*;
-use sdl::err::{non_null_or_sdl_panic, sdl_assert};
-use crate::sdl;
+use sdl_util::err::{non_null_or_sdl_panic, sdl_assert};
+use crate::sdl_util;
 
 /// Wraps an SDL IO stream.
 ///

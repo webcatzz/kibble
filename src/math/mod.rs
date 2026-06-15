@@ -1,19 +1,11 @@
-//! Mathematical types and functions.
+//! Math types.
 
 mod color;
-mod fns;
-mod orientation;
-mod vector;
 mod rect;
-mod traits;
 mod transform;
-mod gradient;
+mod vector;
 
 pub use color::*;
-pub use fns::*;
-pub use orientation::*;
-pub use vector::*;
 pub use rect::*;
-pub use traits::*;
 pub use transform::*;
-pub use gradient::*;
+pub use vector::*;

@@ -1,11 +1,24 @@
 [package]
-name = "engine"
+name = "kibble"
 version = "0.1.0"
 edition = "2024"
+license = "MIT-0"
 
 [dependencies]
+derive_more = { version = "2.1.1", features = ["add", "add_assign"] }
+futures = { version = "0.3.32", optional = true }
+num-traits = "0.2.19"
 sdl3-image-sys = "0.6.2"
 sdl3-sys = "0.6.3"
-sdl3-ttf-sys = "0.6.0"
-tokio = { version = "1.52.1", features = ["sync", "rt"] }
-zlib-rs = "0.6.3"
+
+[features]
+default = ["audio", "event", "keyboard", "meta", "mouse", "render", "run", "window"]
+audio = []
+event = []
+keyboard = []
+meta = []
+mouse = []
+render = []
+run = []
+sdl_util = []
+window = []
