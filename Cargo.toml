@@ -2,7 +2,8 @@
 name = "kibble"
 version = "0.1.0"
 edition = "2024"
-license = "MIT-0"
+description = "a little game toolkit"
+license = "MIT"
 
 [dependencies]
 derive_more = { version = "2.1.1", features = ["add", "add_assign"] }
