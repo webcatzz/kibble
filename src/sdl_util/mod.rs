@@ -53,14 +53,15 @@
 //! [`EventQueue`]: crate::event::EventQueue
 //! [`AudioDevice`]: crate::audio::AudioDevice
 
-
 mod as_sdl;
-mod err;
+mod panic;
 mod quit;
 
 pub use as_sdl::AsSdlExt;
 pub use quit::quit_if_unused;
-pub use err::SdlErr;
 
 #[doc(inline)]
-pub use err::{sdl_assert, sdl_panic};
+pub use panic::{sdl_assert, sdl_panic};
+
+#[doc(hidden)]
+pub use sdl3_sys::error::SDL_GetError as _SDL_GetError; // Exposed for panic macros
