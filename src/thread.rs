@@ -27,10 +27,9 @@ impl Mtm {
 	/// # Panics
 	///
 	/// Panics if called outside the main thread.
-	#[doc(alias = "new")]
-	pub fn open() -> Self {
-		assert!(is_main(), "`Ctx::open()` should only be called on the main thread");
-		unsafe { Self::open_unchecked() }
+	pub fn new() -> Self {
+		assert!(is_main(), "`Mtm::new()` should only be called on the main thread");
+		unsafe { Self::new_unchecked() }
 	}
 
 	/// Returns a [`Sys`].
@@ -38,7 +37,7 @@ impl Mtm {
 	/// # Safety
 	///
 	/// Should only be called on the main thread.
-	pub unsafe fn open_unchecked() -> Self {
+	pub unsafe fn new_unchecked() -> Self {
 		Self(PhantomData)
 	}
 
