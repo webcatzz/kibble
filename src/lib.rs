@@ -55,6 +55,7 @@
 //! [`Run`]: run::Run
 //! [`Run::run()`]: run::Run::run
 
+pub mod app;
 pub mod math;
 pub mod thread;
 
