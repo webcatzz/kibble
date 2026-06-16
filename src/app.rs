@@ -4,6 +4,23 @@
 //! exceptions. On web platforms, for example, a loop of any kind will freeze
 //! the page. These platforms require programs to be updated by the platform's
 //! own callbacks, so this app interface is provided for maximum compatibility.
+//!
+//! # Examples
+//!
+//! Instead of writing your own `main()` function, implement [`App`] and use
+//! [`run_app`]:
+//!
+//! ```
+//! pub struct Game { /* ... */ }
+//!
+//! impl App for Game {
+//!   /* ... */
+//! }
+//!
+//! fn main() {
+//!   run_app!(Game);
+//! }
+//! ```
 
 use std::ffi::c_int;
 use std::mem;
@@ -15,15 +32,16 @@ pub use sdl3_sys as __sdl3_sys;
 use crate::event::Event;
 use crate::thread::Mtm;
 
+/// An app interface.
 pub trait App: Sized {
 
 	/// Called once at the beginning of the program to initialize the
 	/// application.
 	///
-	/// Will always be called on the main thread.
+	/// Always called on the main thread.
 	fn init(mtm: Mtm) -> AppStatus<Self>;
 
-	/// Will always be called on the main thread.
+	/// Always called on the main thread.
 	fn iter(&mut self) -> AppStatus;
 
 	/// May be called outside the main thread.

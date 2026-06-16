@@ -23,7 +23,7 @@ pub struct Mtm(PhantomData<*const ()>); // Phantom pointer for `!Send` and `!Syn
 
 impl Mtm {
 
-	/// Returns a [`Sys`].
+	/// Returns a main thread marker.
 	///
 	/// # Panics
 	///
@@ -33,7 +33,7 @@ impl Mtm {
 		unsafe { Self::new_unchecked() }
 	}
 
-	/// Returns a [`Sys`].
+	/// Returns a main thread marker.
 	///
 	/// # Safety
 	///
@@ -42,23 +42,12 @@ impl Mtm {
 		Self(PhantomData)
 	}
 
-	/// Opens a new window.
+	/// Safe interface for [`Window::new_unchecked()`].
 	pub fn open_window(self, title: &str, size: Vec2<u32>) -> Window {
 		unsafe { Window::new_unchecked(title, size) }
 	}
 
-	/// Returns an interface for the audio device with the given ID.
-	///
-	/// If you don't need to use a specific device, use the IDs
-	/// [`DEFAULT_PLAYBACK`] or [`DEFAULT_RECORDING`] for a reasonable default.
-	/// If the default audio device ever changes (e.g. it is plugged in or
-	/// unplugged), the interface will seamlessly switch to the new device.
-	///
-	/// You may request a specific format for the audio device. The device may
-	/// not honor the request. If `format` is `None`, uses a reasonable default.
-	///
-	/// [`DEFAULT_PLAYBACK`]: AudioDeviceId::DEFAULT_PLAYBACK
-	/// [`DEFAULT_RECORDING`]: AudioDeviceId::DEFAULT_RECORDING
+	/// Safe interface for [`AudioDevice::new_unchecked()`].
 	pub fn open_audio_device(self, id: AudioDeviceId, format: Option<AudioFormat>) -> AudioDevice {
 		unsafe { AudioDevice::new_unchecked(id, format) }
 	}
