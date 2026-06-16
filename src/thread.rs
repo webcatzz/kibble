@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 use sdl3_sys::init::SDL_IsMainThread;
 
 use crate::audio::{AudioDevice, AudioDeviceId, AudioFormat};
+use crate::input::{self, KeyboardState, MouseState};
 use crate::math::Vec2;
 use crate::window::Window;
 
@@ -60,6 +61,21 @@ impl Mtm {
 	/// [`DEFAULT_RECORDING`]: AudioDeviceId::DEFAULT_RECORDING
 	pub fn open_audio_device(self, id: AudioDeviceId, format: Option<AudioFormat>) -> AudioDevice {
 		unsafe { AudioDevice::new_unchecked(id, format) }
+	}
+
+	/// Safe interface for [`input::keyboard_state()`].
+	pub fn keyboard_state(self) -> KeyboardState {
+		unsafe { input::keyboard_state() }
+	}
+
+	/// Safe interface for [`input::reset_keyboard()`].
+	pub fn reset_keyboard(self) {
+		unsafe { input::reset_keyboard(); }
+	}
+
+	/// Safe interface for [`input::mouse_state()`].
+	pub fn mouse_state(self) -> MouseState {
+		unsafe { input::mouse_state() }
 	}
 
 }

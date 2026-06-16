@@ -5,8 +5,6 @@ use sdl3_sys::events::{SDL_Event, SDL_PollEvent, SDL_PushEvent, SDL_QuitEvent, S
 use sdl3_sys::init::{SDL_INIT_EVENTS, SDL_InitSubSystem, SDL_QuitSubSystem};
 use sdl3_sys::timer::SDL_GetTicksNS;
 
-use crate::input::{self, KeyboardState, MouseButtons};
-use crate::math::Vec2;
 use crate::sdl_util::{self, sdl_assert};
 use crate::thread;
 
@@ -69,23 +67,6 @@ impl EventQueue {
 	pub unsafe fn open_unchecked() -> Self {
 		sdl_assert!(unsafe { SDL_InitSubSystem(SDL_INIT_EVENTS) });
 		Self(PhantomData)
-	}
-
-	/// Returns the global keyboard state.
-	pub fn keyboard_state(&self) -> KeyboardState {
-		unsafe { keyboard::state() }
-	}
-
-	/// Resets the global keyboard state.
-	///
-	/// Generates key-up events for all pressed keys.
-	pub fn reset_keyboard(&self) {
-		unsafe { keyboard::reset(); }
-	}
-
-	/// Returns the current global mouse state.
-	pub fn mouse_state(&self) -> (MouseButtons, Vec2<f32>) {
-		unsafe { mouse::state() }
 	}
 
 	/// Pushes [`Event::Quit`] onto the event queue.
