@@ -8,13 +8,9 @@ use super::MouseButtons;
 
 /// Returns the current global mouse state.
 ///
-/// For a safe interface, see [`EventQueue::mouse_state()`].
-///
 /// # Safety
 ///
 /// Should only be called on the main thread.
-///
-/// [`EventQueue::mouse_state()`]: crate::event::EventQueue::mouse_state
 pub unsafe fn mouse_state() -> MouseState {
 	let mut x = MaybeUninit::uninit();
 	let mut y = MaybeUninit::uninit();

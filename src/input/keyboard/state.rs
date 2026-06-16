@@ -7,13 +7,9 @@ use super::Keycode;
 
 /// Returns the global keyboard state.
 ///
-/// For a safe interface, see [`EventQueue::keyboard_state()`].
-///
 /// # Safety
 ///
 /// Should only be called on the main thread.
-///
-/// [`EventQueue::keyboard_state()`]: crate::event::EventQueue::keyboard_state
 pub unsafe fn keyboard_state() -> KeyboardState {
 	// SAFETY: array returned by `SDL_GetKeyboardState()` is valid for 'static
 	let mut len = MaybeUninit::uninit();
@@ -25,13 +21,9 @@ pub unsafe fn keyboard_state() -> KeyboardState {
 ///
 /// Generates key-up events for all pressed keys.
 ///
-/// For a safe interface, see [`EventQueue::reset_keyboard()`].
-///
 /// # Safety
 ///
 /// Should only be called on the main thread.
-///
-/// [`EventQueue::reset_keyboard()`]: crate::event::EventQueue::reset_keyboard
 pub unsafe fn reset_keyboard() {
 	unsafe { SDL_ResetKeyboard(); }
 }
