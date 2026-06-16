@@ -56,6 +56,7 @@
 //! [`Run::run()`]: run::Run::run
 
 pub mod app;
+pub mod input;
 pub mod math;
 pub mod thread;
 
@@ -63,12 +64,8 @@ pub mod thread;
 pub mod audio;
 #[cfg(feature = "event")]
 pub mod event;
-#[cfg(feature = "keyboard")]
-pub mod keyboard;
 #[cfg(feature = "meta")]
 pub mod meta;
-#[cfg(feature = "mouse")]
-pub mod mouse;
 #[cfg(feature = "render")]
 pub mod render;
 #[cfg(feature = "run")]

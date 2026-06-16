@@ -4,9 +4,8 @@ use std::ffi::CStr;
 
 use sdl3_sys::events::*;
 
-use crate::keyboard::{ModKeys, Keycode, KeyLabel};
+use crate::input::{ModKeys, Keycode, KeyLabel, MouseButton, MouseButtons};
 use crate::math::Vec2;
-use crate::mouse::{MouseButton, MouseButtons};
 
 /// A system event.
 ///

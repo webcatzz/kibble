@@ -5,9 +5,8 @@ use sdl3_sys::events::{SDL_Event, SDL_PollEvent, SDL_PushEvent, SDL_QuitEvent, S
 use sdl3_sys::init::{SDL_INIT_EVENTS, SDL_InitSubSystem, SDL_QuitSubSystem};
 use sdl3_sys::timer::SDL_GetTicksNS;
 
-use crate::keyboard::{self, KeyboardState};
+use crate::input::{self, KeyboardState, MouseButtons};
 use crate::math::Vec2;
-use crate::mouse::{self, MouseButtons};
 use crate::sdl_util::{self, sdl_assert};
 use crate::thread;
 

@@ -14,7 +14,7 @@ use super::Keycode;
 /// Should only be called on the main thread.
 ///
 /// [`EventQueue::keyboard_state()`]: crate::event::EventQueue::keyboard_state
-pub unsafe fn state() -> KeyboardState {
+pub unsafe fn keyboard_state() -> KeyboardState {
 	// SAFETY: array returned by `SDL_GetKeyboardState()` is valid for 'static
 	let mut len = MaybeUninit::uninit();
 	let ptr = unsafe { SDL_GetKeyboardState(len.as_mut_ptr()) };
@@ -32,7 +32,7 @@ pub unsafe fn state() -> KeyboardState {
 /// Should only be called on the main thread.
 ///
 /// [`EventQueue::reset_keyboard()`]: crate::event::EventQueue::reset_keyboard
-pub unsafe fn reset() {
+pub unsafe fn reset_keyboard() {
 	unsafe { SDL_ResetKeyboard(); }
 }
 

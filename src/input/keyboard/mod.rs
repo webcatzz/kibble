@@ -8,4 +8,4 @@ mod state;
 pub use code::Keycode;
 pub use label::KeyLabel;
 pub use modifiers::ModKeys;
-pub use state::{KeyboardState, reset, state};
+pub use state::{KeyboardState, reset_keyboard, keyboard_state};
