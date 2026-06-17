@@ -110,7 +110,7 @@ macro_rules! run_app {
 
 			unsafe extern "C" fn init<T: App>(appstate: *mut *mut c_void, argc: c_int, argv: *mut *mut c_char) -> SDL_AppResult {
 				// SAFETY: this function is only ever called on the main thread
-				match <$app>::init(unsafe { Mtm::open_unchecked() }) {
+				match T::init(unsafe { Mtm::new_unchecked() }) {
 					AppStatus::Running(state) => {
 						unsafe { appstate.write(Box::into_raw(Box::new(state)) as *mut c_void); }
 						SDL_APP_CONTINUE
@@ -123,14 +123,14 @@ macro_rules! run_app {
 			unsafe extern "C" fn iter<T: App>(appstate: *mut c_void) -> SDL_AppResult {
 				// SAFETY: `appstate` is only accessed by these SDL callbacks
 				// SAFETY: `appstate` is non-null since it was leaked from a `Box`
-				let state = unsafe { (appstate as *mut $app).as_mut_unchecked() };
+				let state = unsafe { (appstate as *mut T).as_mut_unchecked() };
 				state.iter().into()
 			}
 
 			unsafe extern "C" fn event<T: App>(appstate: *mut c_void, event: *mut SDL_Event) -> SDL_AppResult {
 				// SAFETY: `appstate` is only accessed by these SDL callbacks
 				// SAFETY: `appstate` is non-null since it was leaked from a `Box`
-				let state = unsafe { (appstate as *mut $app).as_mut_unchecked() };
+				let state = unsafe { (appstate as *mut T).as_mut_unchecked() };
 				let Ok(event) = unsafe { *event }.try_into() else { return SDL_APP_CONTINUE; };
 				unsafe { state.listen(&event) }.into()
 			}
@@ -138,7 +138,7 @@ macro_rules! run_app {
 			unsafe extern "C" fn quit<T: App>(appstate: *mut c_void, result: SDL_AppResult) {
 				// SAFETY: `appstate` was leaked from a `Box`
 				// SAFETY: nothing reads `appstate` again; this callback is run right before the program exits
-				drop(unsafe { Box::from_raw(appstate as *mut $app) });
+				drop(unsafe { Box::from_raw(appstate as *mut T) });
 			}
 
 			unsafe { SDL_EnterAppMainCallbacks(0, std::ptr::null_mut(), Some(init::<$app>), Some(iter::<$app>), Some(event::<$app>), Some(quit::<$app>)); }
