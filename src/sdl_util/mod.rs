@@ -4,12 +4,14 @@
 //! more of SDL, you should interface with it directly. Note that interfacing
 //! with SDL, especially types underlying Kibble types, is by nature unsafe.
 //!
-//! This module provides utilities from Kibble's implementation:
+//! This module provides access to:
 //!
-//! - Panicking with SDL error messages, through [`sdl_panic!`] and
+//! - The SDL representations underlying Kibble's types, through the
+//!   [`AsSdlExt`] extension trait,
+//! - Panic macros that print SDL error messages, through [`sdl_panic!`] and
 //!   [`sdl_assert!`],
-//! - Access to the SDL representations underlying Kibble's types, through the
-//!   [`AsSdlExt`] extension trait.
+//! - An SDL IO interface for [`Read`] types, through [`SdlIoStream`],
+//! - The SDL destructor used by Kibble, through [`quit_if_unused()`].
 //!
 //! Kibble uses the [`sdl3_sys`] Rust bindings.
 //!
@@ -49,15 +51,18 @@
 //! [`quit_if_unused()`] once you deinitialize them to clean up SDL's remaining
 //! memory.
 //!
+//! [`Read`]: std::io::Read
 //! [`Window`]: crate::window::Window
 //! [`EventQueue`]: crate::event::EventQueue
 //! [`AudioDevice`]: crate::audio::AudioDevice
 
 mod as_sdl;
+mod io;
 mod panic;
 mod quit;
 
 pub use as_sdl::AsSdlExt;
+pub use io::SdlIoStream;
 pub use quit::quit_if_unused;
 
 #[doc(inline)]

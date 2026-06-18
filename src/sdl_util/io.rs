@@ -1,183 +1,158 @@
 use std::ffi::c_void;
-use std::io::{self, Read, Write, Seek, SeekFrom, ErrorKind};
+use std::io::{Read, Seek, SeekFrom, ErrorKind};
 use std::marker::PhantomData;
 use std::mem::size_of;
 use std::ptr::{self, NonNull};
 use std::slice;
-use sdl3_sys::iostream::*;
-use sdl_util::err::{non_null_or_sdl_panic, sdl_assert};
-use crate::sdl_util;
 
-/// Wraps an SDL IO stream.
+use sdl3_sys::iostream::*;
+
+use super::{AsSdlExt, sdl_assert, sdl_panic};
+
+/// An SDL IO stream around a [`Read`] type.
 ///
-/// Does NOT close the stream when dropped.
-pub struct SdlIoStream<'a, T> {
-	stream: NonNull<SDL_IOStream>,
-	phantom: PhantomData<&'a T>,
-}
+/// The stream will be closed when dropped. SDL may attempt to close the stream,
+/// but it will do nothing.
+pub struct SdlIoStream<'a, T>(NonNull<SDL_IOStream>, PhantomData<&'a mut T>);
 
 impl<'a, T: Read> SdlIoStream<'a, T> {
+
 	/// Opens a new SDL IO stream that allows reading.
-	pub fn new_read(data: &'a mut T) -> Self {
-		Self {
-			stream: unsafe {
-				non_null_or_sdl_panic(SDL_OpenIO(&SDL_IOStreamInterface {
-					version: size_of::<SDL_IOStreamInterface>() as u32,
-					size:    Some(iface_size_fail),
-					seek:    Some(iface_seek_fail),
-					read:    Some(iface_read::<T>),
-					write:   Some(iface_write_fail_readonly),
-					flush:   Some(iface_flush_fail_readonly),
-					close:   Some(iface_close_noop),
-				}, ptr::from_mut(data) as *mut c_void))
-			},
-			phantom: PhantomData,
-		}
+	pub fn new_read(bytes: &'a mut T) -> Self {
+		// Creates IO stream
+		let interface = SDL_IOStreamInterface {
+			version: size_of::<SDL_IOStreamInterface>() as u32,
+			size:    Some(iface_size_fail),
+			seek:    Some(iface_seek_fail),
+			read:    Some(iface_read::<T>),
+			write:   Some(iface_write_fail_readonly),
+			flush:   Some(iface_flush_fail_readonly),
+			close:   Some(iface_close_noop),
+		};
+		let stream_ptr = unsafe { SDL_OpenIO(&interface, ptr::from_mut(bytes) as *mut c_void) };
+		let Some(stream_non_null) = NonNull::new(stream_ptr) else { sdl_panic!() };
+		// Returns
+		Self(stream_non_null, PhantomData)
 	}
+
 }
 
 impl<'a, T: Read + Seek> SdlIoStream<'a, T> {
+
 	/// Opens a new SDL IO stream that allows reading and seeking.
-	pub fn new_read_seek(data: &'a mut T) -> Self {
-		Self {
-			stream: unsafe {
-				non_null_or_sdl_panic(SDL_OpenIO(&SDL_IOStreamInterface {
-					version: size_of::<SDL_IOStreamInterface>() as u32,
-					size:    Some(iface_size_fail),
-					seek:    Some(iface_seek::<T>),
-					read:    Some(iface_read::<T>),
-					write:   Some(iface_write_fail_readonly),
-					flush:   Some(iface_flush_fail_readonly),
-					close:   Some(iface_close_noop),
-				}, ptr::from_mut(data) as *mut c_void))
-			},
-			phantom: PhantomData,
-		}
+	pub fn new_read_seek(bytes: &'a mut T) -> Self {
+		// Creates IO stream
+		let interface = SDL_IOStreamInterface {
+			version: size_of::<SDL_IOStreamInterface>() as u32,
+			size:    Some(iface_size_fail),
+			seek:    Some(iface_seek::<T>),
+			read:    Some(iface_read::<T>),
+			write:   Some(iface_write_fail_readonly),
+			flush:   Some(iface_flush_fail_readonly),
+			close:   Some(iface_close_noop),
+		};
+		let stream_ptr = unsafe { SDL_OpenIO(&interface, ptr::from_mut(bytes) as *mut c_void) };
+		let Some(stream_non_null) = NonNull::new(stream_ptr) else { sdl_panic!() };
+		// Returns
+		Self(stream_non_null, PhantomData)
 	}
+
 }
 
-impl<'a, T> SdlIoStream<'a, T> {
-	/// Returns the [`SDL_IOStream`] pointer underlying an [`SdlIoStream`].
-	pub fn sdl_stream(&self) -> *mut SDL_IOStream {
-		self.stream.as_ptr()
+impl<'a, T> AsSdlExt<*mut SDL_IOStream> for SdlIoStream<'a, T> {
+
+	fn as_sdl(&self) -> *mut SDL_IOStream {
+		self.0.as_ptr()
 	}
+
 }
 
 impl<'a, T> Drop for SdlIoStream<'a, T> {
+
 	fn drop(&mut self) {
-		unsafe { sdl_assert!(SDL_CloseIO(self.sdl_stream())); }
+		sdl_assert!(unsafe { SDL_CloseIO(self.as_sdl()) });
 	}
+
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::size`].
+/// An [`SDL_IOStreamInterface::size`] callback.
 ///
-/// Always fails and returns -1.
-extern "C" fn iface_size_fail(_userdata: *mut c_void) -> i64 {
+/// Always returns -1.
+extern "C" fn iface_size_fail(_: *mut c_void) -> i64 {
 	-1
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::seek`].
+/// An [`SDL_IOStreamInterface::seek`] callback.
 ///
 /// Seeks to `offset` relative to `whence`. Returns the final offset in the data
-/// stream.
+/// stream, or `-1` on error.
 extern "C" fn iface_seek<T: Seek>(userdata: *mut c_void, offset: i64, whence: SDL_IOWhence) -> i64 {
-	unsafe {
-		let v = &mut *(userdata as *mut T);
-		v.seek(match whence {
-			SDL_IO_SEEK_SET => SeekFrom::Start(offset as u64),
-			SDL_IO_SEEK_CUR => SeekFrom::Current(offset),
-			SDL_IO_SEEK_END => SeekFrom::End(offset),
-			_ => panic!("Unrecognized `SDL_IOWhence` variant"),
-		}).unwrap() as i64
-	}
+	// SAFETY: `userdata` is created from a mutable reference in
+	// `SdlIoStream::new_read()` or `SdlIoStream::new_read_seek()`
+	let bytes = unsafe { (userdata as *mut T).as_mut_unchecked() };
+	let pos = match whence {
+		SDL_IO_SEEK_SET => SeekFrom::Start(offset as u64),
+		SDL_IO_SEEK_CUR => SeekFrom::Current(offset),
+		SDL_IO_SEEK_END => SeekFrom::End(offset),
+		_               => panic!("Unknown `SDL_IOWhence` variant: {}", whence.0),
+	};
+	bytes.seek(pos).map_or(-1, |i| i64::try_from(i).expect("Seek position should be convertible to `i64`"))
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::seek`].
+/// An [`SDL_IOStreamInterface::seek`] callback.
 ///
-/// Always fails and returns -1.
-extern "C" fn iface_seek_fail(_userdata: *mut c_void, _offset: i64, _whence: SDL_IOWhence) -> i64 {
+/// Always returns -1.
+extern "C" fn iface_seek_fail(_: *mut c_void, _: i64, _: SDL_IOWhence) -> i64 {
 	-1
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::read`].
+/// An [`SDL_IOStreamInterface::read`] callback.
 ///
-/// Reads up to `size` bytes from the data stream to the area pointed at by
+/// Reads up to `size` bytes from the data stream to the buffer pointed at by
 /// `ptr`. On an incomplete read, sets `status` to an `SDL_IOStatus` value.
 /// Returns the number of bytes read.
-extern "C" fn iface_read<T: Read>(userdata: *mut c_void, ptr: *mut c_void, size: usize, status: *mut SDL_IOStatus) -> usize {
-	unsafe {
-		let v = &mut *(userdata as *mut T);
-		match v.read(slice::from_raw_parts_mut(ptr as *mut u8, size)) {
-			Ok(len) => {
-				*status = if len == 0 { SDL_IO_STATUS_EOF } else { SDL_IO_STATUS_READY };
-				len
-			}
-			Err(err) => {
-				match err.kind() {
-					io::ErrorKind::Interrupted =>
-						*status = SDL_IO_STATUS_READY,
-					kind => {
-						eprintln!("SDL IO interface error: {kind}");
-						*status = SDL_IO_STATUS_ERROR;
-					}
-				}
-				0
-			}
+extern "C" fn iface_read<T: Read>(userdata: *mut c_void, ptr: *mut c_void, size: usize, status_ptr: *mut SDL_IOStatus) -> usize {
+	// Converts arguments
+	// SAFETY: `userdata` is created from a mutable reference in
+	// `SdlIoStream::new_read()` or `SdlIoStream::new_read_seek()`
+	let bytes = unsafe { (userdata as *mut T).as_mut_unchecked() };
+	let buf = unsafe { slice::from_raw_parts_mut(ptr as *mut u8, size) };
+	// Reads data into buffer
+	let bytes_read;
+	let status;
+	match bytes.read(buf) {
+		Ok(n) => {
+			bytes_read = n;
+			status = if bytes_read == 0 && buf.len() != 0 { SDL_IO_STATUS_EOF } else { SDL_IO_STATUS_READY };
+		}
+		Err(err) => {
+			bytes_read = 0;
+			status = if err.kind() == ErrorKind::Interrupted { SDL_IO_STATUS_READY } else { SDL_IO_STATUS_ERROR };
 		}
 	}
+	// Writes status
+	unsafe { status_ptr.write(status); }
+	// Returns number of bytes read
+	bytes_read
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::read`].
+/// An [`SDL_IOStreamInterface::write`] callback.
 ///
-/// Always fails with status `SDL_IO_STATUS_WRITEONLY` and returns `0`.
-extern "C" fn iface_read_fail_writeonly(_userdata: *mut c_void, _ptr: *mut c_void, _size: usize, status: *mut SDL_IOStatus) -> usize {
-	unsafe {
-		*status = SDL_IO_STATUS_WRITEONLY;
-		0
-	}
-}
-
-/// SDL-compatible callback for [`SDL_IOStreamInterface::write`].
-///
-/// Writes up to `size` bytes from the area pointed at by `ptr` to the data
-/// stream. On an incomplete write, sets `status` to an `SDL_IOStatus` value.
-/// Returns the number of bytes written.
-extern "C" fn iface_write<T: Write>(userdata: *mut c_void, ptr: *const c_void, size: usize, _status: *mut SDL_IOStatus) -> usize {
-	unsafe {
-		let v = &mut *(userdata as *mut T);
-		v.write(slice::from_raw_parts(&*(ptr as *const u8), size)).unwrap()
-	}
-}
-
-/// SDL-compatible callback for [`SDL_IOStreamInterface::write`].
-///
-/// Always fails with status `SDL_IO_STATUS_READONLY` and returns 0.
+/// Always sets status to `SDL_IO_STATUS_READONLY` and returns 0.
 extern "C" fn iface_write_fail_readonly(_userdata: *mut c_void, _ptr: *const c_void, _size: usize, status: *mut SDL_IOStatus) -> usize {
-	unsafe { *status = SDL_IO_STATUS_READONLY; }
+	unsafe { status.write(SDL_IO_STATUS_READONLY); }
 	0
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::flush`].
+/// An [`SDL_IOStreamInterface::flush`] callback.
 ///
-/// Ensures data is written out if the stream is buffering. On failure, sets
-/// `status` to an `SDL_IOStatus` value. Always returns true.
-extern "C" fn iface_flush<T: Write>(userdata: *mut c_void, _status: *mut SDL_IOStatus) -> bool {
-	unsafe {
-		let v = &mut *(userdata as *mut T);
-		v.flush().unwrap();
-		true
-	}
-}
-
-/// SDL-compatible callback for [`SDL_IOStreamInterface::flush`].
-///
-/// Always fails with status `SDL_IO_STATUS_READONLY` and returns false.
+/// Always sets status to `SDL_IO_STATUS_READONLY` and returns false.
 extern "C" fn iface_flush_fail_readonly(_userdata: *mut c_void, status: *mut SDL_IOStatus) -> bool {
-	unsafe { *status = SDL_IO_STATUS_READONLY; }
+	unsafe { status.write(SDL_IO_STATUS_READONLY); }
 	false
 }
 
-/// SDL-compatible callback for [`SDL_IOStreamInterface::close`].
+/// An [`SDL_IOStreamInterface::close`] callback.
 ///
 /// Does nothing. Always returns true.
 extern "C" fn iface_close_noop(_userdata: *mut c_void) -> bool {
