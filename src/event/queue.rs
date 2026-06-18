@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 
-use sdl3_sys::events::{SDL_Event, SDL_PollEvent, SDL_PushEvent, SDL_QuitEvent, SDL_EVENT_QUIT};
+use sdl3_sys::events::{SDL_EVENT_QUIT, SDL_Event, SDL_PollEvent, SDL_PushEvent, SDL_QuitEvent, SDL_WaitEvent};
 use sdl3_sys::init::{SDL_INIT_EVENTS, SDL_InitSubSystem, SDL_QuitSubSystem};
 use sdl3_sys::timer::SDL_GetTicksNS;
 
@@ -67,6 +67,13 @@ impl EventQueue {
 	pub unsafe fn open_unchecked() -> Self {
 		sdl_assert!(unsafe { SDL_InitSubSystem(SDL_INIT_EVENTS) });
 		Self(PhantomData)
+	}
+
+	/// Waits indefinitely for the next event.
+	pub fn await_next(&mut self) -> Event {
+		let mut event = MaybeUninit::uninit();
+		sdl_assert!(unsafe { SDL_WaitEvent(event.as_mut_ptr()) });
+		Event::try_from(unsafe { event.assume_init() }).unwrap_or_else(|_| self.await_next())
 	}
 
 	/// Pushes [`Event::Quit`] onto the event queue.
