@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 use sdl3_sys::init::SDL_IsMainThread;
 
 use crate::audio::{AudioDevice, AudioDeviceId, AudioFormat};
+use crate::event::EventQueue;
 use crate::input::{self, KeyboardState, MouseState};
 use crate::math::Vec2;
 use crate::window::Window;
@@ -40,6 +41,11 @@ impl Mtm {
 	/// Should only be called on the main thread.
 	pub unsafe fn new_unchecked() -> Self {
 		Self(PhantomData)
+	}
+
+	/// Safe interface for [`EventQueue::open_unchecked()`].
+	pub fn open_event_queue(self) -> EventQueue {
+		unsafe { EventQueue::open_unchecked() }
 	}
 
 	/// Safe interface for [`Window::new_unchecked()`].
