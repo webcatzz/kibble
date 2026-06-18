@@ -28,11 +28,12 @@
 //! [`run`]: run::run
 //! [`run::run()`]: run::run::run
 
-pub mod app;
 pub mod input;
 pub mod math;
 pub mod thread;
 
+#[cfg(feature = "app")]
+pub mod app;
 #[cfg(feature = "audio")]
 pub mod audio;
 #[cfg(feature = "event")]

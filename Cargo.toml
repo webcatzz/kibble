@@ -14,6 +14,7 @@ sdl3-sys = "0.6.3"
 
 [features]
 default = ["audio", "event", "keyboard", "meta", "mouse", "render", "window"]
+app = []
 audio = []
 event = []
 keyboard = []
