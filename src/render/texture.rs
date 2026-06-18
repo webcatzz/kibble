@@ -1,4 +1,4 @@
-use std::ffi::{c_float, c_void};
+use std::ffi::c_float;
 use std::fs::File;
 use std::io::{self, Read, Seek};
 use std::path::Path;
@@ -9,7 +9,7 @@ use sdl3_sys::render::*;
 use sdl3_image_sys::image::*;
 
 use crate::math::{Color, Rect, Transform, Vec2};
-use crate::sdl_util::{AsSdlExt, sdl_assert, sdl_panic};
+use crate::sdl_util::{AsSdlExt, SdlIoStream, sdl_assert, sdl_panic};
 
 use super::Frame;
 
@@ -26,16 +26,10 @@ impl Texture {
 
 	/// Reads a texture from bytes.
 	pub fn from_bytes(bytes: &mut (impl Read + Seek), frame: &Frame) -> io::Result<Self> {
-		// TODO: use custom io interface
-		let mut buf = Vec::new();
-		bytes.read_to_end(&mut buf).unwrap();
-		let stream = unsafe { sdl3_sys::iostream::SDL_IOFromConstMem(buf.as_mut_ptr() as *const c_void, buf.len()) };
-		let ptr = unsafe { IMG_LoadTexture_IO(frame.as_sdl(), stream, true) };
+		let stream = SdlIoStream::new_read_seek(bytes);
+		let ptr = unsafe { IMG_LoadTexture_IO(frame.as_sdl(), stream.as_sdl(), false) };
 		let Some(non_null) = NonNull::new(ptr) else { sdl_panic!() };
 		Ok(Texture::from_sdl_texture(non_null))
-		// let stream = SdlIoStream::new_read_seek(bytes);
-		// let ptr = unsafe { IMG_LoadTexture_IO(params.sdl_renderer(), stream.sdl_stream(), false) };
-		// Texture::from_sdl_texture(non_null_or_sdl_panic(ptr))
 	}
 
 	/// Returns the width of the texture, in pixels.

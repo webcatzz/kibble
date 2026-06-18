@@ -1,20 +1,25 @@
+use std::ffi::c_void;
 use std::fs::File;
 use std::io::{self, Read, Seek};
 use std::mem::MaybeUninit;
 use std::path::Path;
+use std::ptr::NonNull;
 use std::slice;
 
 use sdl3_sys::audio::*;
 use sdl3_sys::stdinc::SDL_free;
 
-use crate::sdl_util::sdl_assert;
+use crate::sdl_panic;
+use crate::sdl_util::{AsSdlExt, SdlIoStream, sdl_assert};
 
 use super::AudioFormat;
 
 /// Audio data.
 pub struct Audio {
 	/// The raw audio bytes.
-	bytes:  Vec<u8>,
+	bytes:  NonNull<u8>,
+	/// The number of bytes.
+	len:    usize,
 	/// The format of the data.
 	format: AudioFormat,
 }
@@ -29,38 +34,18 @@ impl Audio {
 
 	/// Reads audio from bytes.
 	pub fn from_bytes(bytes: &mut (impl Read + Seek)) -> io::Result<Self> {
-		// TODO: use custom io interface
-		let mut buf = Vec::new();
-		bytes.read_to_end(&mut buf).unwrap();
-		let mut audio_spec = MaybeUninit::uninit();
+		let stream = SdlIoStream::new_read_seek(bytes);
 		let mut audio_buf = MaybeUninit::uninit();
 		let mut audio_len = MaybeUninit::uninit();
-		unsafe {
-			let stream = sdl3_sys::iostream::SDL_IOFromConstMem(buf.as_mut_ptr() as *const _, buf.len());
-			sdl_assert!(SDL_LoadWAV_IO(stream, true, audio_spec.as_mut_ptr(), audio_buf.as_mut_ptr(), audio_len.as_mut_ptr()));
-			let slice = slice::from_raw_parts_mut(audio_buf.assume_init(), audio_len.assume_init() as usize);
-			let audio = Audio {
-				format: audio_spec.assume_init().into(),
-				bytes:  slice.to_vec(),
-			};
-			SDL_free(audio_buf.assume_init() as *mut _);
-			Ok(audio)
-		}
-
-		// let stream = SdlIoStream::new_read_seek(bytes);
-		// let mut audio_spec = MaybeUninit::uninit();
-		// let mut audio_buf = MaybeUninit::uninit();
-		// let mut audio_len = MaybeUninit::uninit();
-		// unsafe {
-		// 	sdl_assert!(SDL_LoadWAV_IO(stream.sdl_stream(), false, audio_spec.as_mut_ptr(), audio_buf.as_mut_ptr(), audio_len.as_mut_ptr()));
-		// 	let slice = slice::from_raw_parts_mut(audio_buf.assume_init(), audio_len.assume_init() as usize);
-		// 	let audio = Audio {
-		// 		spec: audio_spec.assume_init().into(),
-		// 		data: slice.to_vec(),
-		// 	};
-		// 	SDL_free(audio_buf.assume_init() as *mut _);
-		// 	audio
-		// }
+		let mut audio_spec = MaybeUninit::uninit();
+		// SAFETY: `audio_buf` pointer is freed by drop destructor
+		sdl_assert!(unsafe { SDL_LoadWAV_IO(stream.as_sdl(), false, audio_spec.as_mut_ptr(), audio_buf.as_mut_ptr(), audio_len.as_mut_ptr()) });
+		let Some(audio_buf_non_null) = NonNull::new(unsafe { audio_buf.assume_init() }) else { sdl_panic!() };
+		Ok(Self {
+			bytes:  audio_buf_non_null,
+			len:    usize::try_from(unsafe { audio_len.assume_init() }).expect("Number of audio bytes should not exceed `usize::MAX`"),
+			format: AudioFormat::from(unsafe { audio_spec.assume_init() }),
+		})
 	}
 
 	/// Returns the format of the audio data.
@@ -70,7 +55,17 @@ impl Audio {
 
 	/// Returns a reference to the raw audio data.
 	pub fn bytes(&self) -> &[u8] {
-		self.bytes.as_slice()
+		// SAFETY: `bytes` is a valid pointer returned by `Self::from_bytes()`
+		unsafe { slice::from_raw_parts(self.bytes.as_ptr(), self.len) }
+	}
+
+}
+
+impl Drop for Audio {
+
+	fn drop(&mut self) {
+		// SAFETY: `bytes` is a valid SDL pointer returned by `Self::from_bytes()`
+		unsafe { SDL_free(self.bytes.as_ptr() as *mut c_void); }
 	}
 
 }
