@@ -13,13 +13,12 @@ sdl3-image-sys = "0.6.2"
 sdl3-sys = "0.6.3"
 
 [features]
-default = ["audio", "event", "keyboard", "meta", "mouse", "render", "run", "window"]
+default = ["audio", "event", "keyboard", "meta", "mouse", "render", "window"]
 audio = []
 event = []
 keyboard = []
 meta = []
 mouse = []
 render = []
-run = []
 sdl_util = []
 window = []
