@@ -1,4 +1,5 @@
 use std::ffi::{c_float, c_int};
+use std::iter;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::ops::{Deref, DerefMut};
@@ -80,7 +81,7 @@ impl<'a> Frame<'a> {
 
 	/// Outlines a circle.
 	pub fn draw_circle(&mut self, center: Vec2<f32>, radius: f32, color: Color<u8>) {
-		for pos in BresenhamCircle::new(radius as i32) {
+		for pos in bresenham_circle(radius as i32) {
 			let pos = pos.map(|v| v as f32);
 			self.draw_point(Vec2 { x: center.x + pos.x, y: center.y - pos.y }, color);
 			self.draw_point(Vec2 { x: center.x + pos.x, y: center.y + pos.y }, color);
@@ -95,7 +96,7 @@ impl<'a> Frame<'a> {
 
 	/// Fills a circle.
 	pub fn fill_circle(&mut self, center: Vec2<f32>, radius: f32, color: Color<u8>) {
-		for pos in BresenhamCircle::new(radius as i32) {
+		for pos in bresenham_circle(radius as i32) {
 			let pos = pos.map(|v| v as f32);
 			self.draw_line(Vec2 { x: center.x - pos.x, y: center.y - pos.y }, Vec2 { x: center.x + pos.x, y: center.y - pos.y }, color);
 			self.draw_line(Vec2 { x: center.x - pos.x, y: center.y + pos.y }, Vec2 { x: center.x + pos.x, y: center.y + pos.y }, color);
@@ -164,47 +165,26 @@ impl<'r, 'a> Drop for ClippedFrame<'r, 'a> {
 
 }
 
-/// An iterator over points in a Bresenham circle.
+/// Returns an iterator over points in a Bresenham circle in the arc \[0°, -45°].
 ///
 /// See the [midpoint circle algorithm].
 ///
 /// [midpoint circle algorithm]:
 ///     https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
-struct BresenhamCircle {
-	point: Vec2<i32>,
-	t1:    i32,
-}
-
-impl BresenhamCircle {
-
-	/// Starts a new Bresenham circle with the given radius.
-	fn new(radius: i32) -> Self {
-		Self {
-			point: Vec2 { x: radius, y: 0 },
-			t1:    radius / 16,
+fn bresenham_circle(radius: i32) -> impl Iterator<Item = Vec2<i32>> {
+	let mut point = Vec2 { x: radius, y: 0 };
+	let mut t1 = radius / 16;
+	iter::from_fn(move || if point.x >= point.y {
+		let last_point = point;
+		point.y += 1;
+		t1 += point.y;
+		let t2 = t1 - point.x;
+		if t2 >= 0 {
+			t1 = t2;
+			point.x -= 1;
 		}
-	}
-
-}
-
-impl Iterator for BresenhamCircle {
-
-	type Item = Vec2<i32>;
-
-	fn next(&mut self) -> Option<Self::Item> {
-		if self.point.x >= self.point.y {
-			let last_point = self.point;
-			self.point.y += 1;
-			self.t1 += self.point.y;
-			let t2 = self.t1 - self.point.x;
-			if t2 >= 0 {
-				self.t1 = t2;
-				self.point.x -= 1;
-			}
-			Some(last_point)
-		} else {
-			None
-		}
-	}
-
+		Some(last_point)
+	} else {
+		None
+	})
 }
