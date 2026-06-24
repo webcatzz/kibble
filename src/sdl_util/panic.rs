@@ -10,11 +10,11 @@
 #[doc(hidden)]
 macro_rules! sdl_panic {
 	() => {
-		#[allow(unused_unsafe)]
 		{
-			use std::ffi::CStr;
-			use $crate::sdl_util::_SDL_GetError;
-			panic!("SDL error: {:?}", unsafe { CStr::from_ptr(_SDL_GetError()) });
+			#[allow(unused_unsafe)]
+			{
+				panic!("SDL error: {:?}", unsafe { std::ffi::CStr::from_ptr($crate::sdl_util::_SDL_GetError()) });
+			}
 		}
 	};
 }
@@ -37,11 +37,11 @@ macro_rules! sdl_panic {
 #[doc(hidden)]
 macro_rules! sdl_assert {
 	($cond:expr) => {
-		#[allow(unused_unsafe)]
 		{
-			use std::ffi::CStr;
-			use $crate::sdl_util::_SDL_GetError;
-			assert!($cond, "SDL error: {:?}", unsafe { CStr::from_ptr(_SDL_GetError()) });
+			#[allow(unused_unsafe)]
+			{
+				assert!($cond, "SDL error: {:?}", unsafe { std::ffi::CStr::from_ptr($crate::sdl_util::_SDL_GetError()) });
+			}
 		}
 	};
 }
