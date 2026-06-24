@@ -4,4 +4,4 @@ mod frame;
 mod texture;
 
 pub use frame::Frame;
-pub use texture::{Texture, TextureDrawOptions};
+pub use texture::{Texture, TextureDrawOptions, TextureFilter};
