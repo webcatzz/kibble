@@ -2,7 +2,12 @@
 //!
 //! See the [`Window`] documentation.
 
-use std::ffi::{c_float, c_int, CStr, CString};
+#[cfg(feature = "render")]
+mod render;
+#[cfg(feature = "render")]
+pub use render::{Viewport, ViewportFit, VSync};
+
+use std::ffi::{c_int, CStr, CString};
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
 
@@ -10,10 +15,8 @@ use sdl3_sys::init::{SDL_InitSubSystem, SDL_QuitSubSystem, SDL_INIT_VIDEO};
 use sdl3_sys::keyboard::SDL_ScreenKeyboardShown;
 use sdl3_sys::video::*;
 use sdl3_sys::render::*;
-use sdl3_sys::surface::*;
 
 use crate::math::Vec2;
-use crate::render::Frame;
 use crate::sdl_util::{self, AsSdlExt, sdl_assert, sdl_panic};
 use crate::thread;
 
@@ -43,7 +46,8 @@ use crate::thread;
 /// See the [`Frame`] documentation for examples.
 pub struct Window {
 	sdl_window:   NonNull<SDL_Window>,
-	sdl_renderer: NonNull<SDL_Renderer>,
+	#[cfg(feature = "render")]
+	sdl_renderer: Option<NonNull<SDL_Renderer>>,
 }
 
 impl Window {
@@ -65,15 +69,9 @@ impl Window {
 	///
 	/// Should only be called on the main thread.
 	pub unsafe fn new_unchecked(title: &str, size: Vec2<u32>) -> Self {
-		let mut sdl_window = MaybeUninit::uninit();
-		let mut sdl_renderer = MaybeUninit::uninit();
-		sdl_assert!(unsafe { SDL_InitSubSystem(SDL_INIT_VIDEO)
-			&& SDL_CreateWindowAndRenderer(CString::new(title).unwrap().as_ptr(), size.x as c_int, size.y as c_int, SDL_WindowFlags(0), sdl_window.as_mut_ptr(), sdl_renderer.as_mut_ptr())
-			&& SDL_SetDefaultTextureScaleMode(sdl_renderer.assume_init(), SDL_SCALEMODE_PIXELART)
-			&& SDL_SetRenderVSync(sdl_renderer.assume_init(), 1) });
-		let Some(sdl_window) = NonNull::new(unsafe { sdl_window.assume_init() }) else { sdl_panic!() };
-		let Some(sdl_renderer) = NonNull::new(unsafe { sdl_renderer.assume_init() }) else { sdl_panic!() };
-		Self { sdl_window, sdl_renderer }
+		sdl_assert!(unsafe { SDL_InitSubSystem(SDL_INIT_VIDEO) });
+		let Some(sdl_window) = NonNull::new(unsafe { SDL_CreateWindow(CString::new(title).unwrap().as_ptr(), size.x as c_int, size.y as c_int, SDL_WINDOW_HIGH_PIXEL_DENSITY) }) else { sdl_panic!() };
+		Self { sdl_window, sdl_renderer: None }
 	}
 
 	/// Returns the title of the window.
@@ -144,19 +142,6 @@ impl Window {
 		sdl_assert!(unsafe { SDL_HideWindow(self.as_sdl()) });
 	}
 
-	/// Returns the scale applied to the window's contents.
-	pub fn scale(&self) -> Vec2<f32> {
-		let mut w = MaybeUninit::uninit();
-		let mut h = MaybeUninit::uninit();
-		sdl_assert!(unsafe { SDL_GetRenderScale(self.as_sdl(), w.as_mut_ptr(), h.as_mut_ptr()) });
-		Vec2 { x: unsafe { w.assume_init() } as f32, y: unsafe { h.assume_init() } as f32 }
-	}
-
-	/// Sets the scale applied to the window's contents.
-	pub fn set_scale(&mut self, scale: Vec2<f32>) {
-		sdl_assert!(unsafe { SDL_SetRenderScale(self.as_sdl(), scale.x as c_float, scale.y as c_float) });
-	}
-
 	/// Centers the window on the screen.
 	pub fn center(&mut self) {
 		sdl_assert!(unsafe { SDL_SetWindowPosition(self.as_sdl(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED) });
@@ -172,12 +157,6 @@ impl Window {
 		unsafe { SDL_ScreenKeyboardShown(self.as_sdl()) }
 	}
 
-	/// Returns the next frame of the window for rendering.
-	#[cfg(feature = "render")]
-	pub fn frame<'a>(&'a mut self) -> Frame<'a> {
-		Frame::from_sdl_renderer(self.sdl_renderer)
-	}
-
 }
 
 impl AsSdlExt<*mut SDL_Window> for Window {
@@ -188,19 +167,14 @@ impl AsSdlExt<*mut SDL_Window> for Window {
 
 }
 
-impl AsSdlExt<*mut SDL_Renderer> for Window {
-
-	fn as_sdl(&self) -> *mut SDL_Renderer {
-		self.sdl_renderer.as_ptr()
-	}
-
-}
-
 impl Drop for Window {
 
 	fn drop(&mut self) {
 		unsafe {
-			SDL_DestroyRenderer(self.as_sdl());
+			#[cfg(feature = "render")]
+			if let Some(sdl_renderer) = self.sdl_renderer {
+				SDL_DestroyRenderer(sdl_renderer.as_ptr());
+			}
 			SDL_DestroyWindow(self.as_sdl());
 			SDL_QuitSubSystem(SDL_INIT_VIDEO);
 			sdl_util::quit_if_unused();
