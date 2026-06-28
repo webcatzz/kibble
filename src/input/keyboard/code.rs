@@ -442,7 +442,7 @@ impl Keycode {
 	/// Keyboard 'left GUI'.
 	///
 	/// The left Windows key on Windows, Command key on Mac, or other meta key.
-	pub const L_GUI:               Self = Self(0xE3);
+	pub const L_SUPER:             Self = Self(0xE3);
 	/// Keyboard 'right control'.
 	pub const R_CTRL:              Self = Self(0xE4);
 	/// Keyboard 'right shift'.
@@ -454,7 +454,7 @@ impl Keycode {
 	/// Keyboard 'right GUI'.
 	///
 	/// The right Windows key on Windows, Command key on Mac, or other meta key.
-	pub const R_GUI:               Self = Self(0xE7);
+	pub const R_SUPER:             Self = Self(0xE7);
 
 }
 
