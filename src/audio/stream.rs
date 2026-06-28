@@ -110,9 +110,11 @@ impl AudioStream {
 
 }
 
-impl AsSdlExt<*mut SDL_AudioStream> for AudioStream {
+impl AsSdlExt for AudioStream {
 
-	fn as_sdl(&self) -> *mut SDL_AudioStream {
+	type Sdl = *mut SDL_AudioStream;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_ptr()
 	}
 

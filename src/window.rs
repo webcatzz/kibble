@@ -149,9 +149,11 @@ impl Window {
 
 }
 
-impl AsSdlExt<*mut SDL_Window> for Window {
+impl AsSdlExt for Window {
 
-	fn as_sdl(&self) -> *mut SDL_Window {
+	type Sdl = *mut SDL_Window;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_ptr()
 	}
 

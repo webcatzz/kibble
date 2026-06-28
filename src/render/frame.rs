@@ -129,10 +129,12 @@ impl<'a> Frame<'a> {
 
 }
 
-impl<'a> AsSdlExt<*mut SDL_Renderer> for Frame<'a> {
+impl<'a> AsSdlExt for Frame<'a> {
 
-	fn as_sdl(&self) -> *mut SDL_Renderer {
-		self.sdl_renderer.as_ptr()
+	type Sdl = *mut SDL_Renderer;
+
+	fn as_sdl(&self) -> Self::Sdl {
+		self.0.as_ptr()
 	}
 
 }

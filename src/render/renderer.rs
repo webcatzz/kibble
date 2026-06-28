@@ -104,9 +104,11 @@ impl Renderer {
 
 }
 
-impl AsSdlExt<*mut SDL_Renderer> for Renderer {
+impl AsSdlExt for Renderer {
 
-	fn as_sdl(&self) -> *mut SDL_Renderer {
+	type Sdl = *mut SDL_Renderer;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_ptr()
 	}
 

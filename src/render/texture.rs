@@ -103,9 +103,11 @@ impl Clone for Texture {
 
 }
 
-impl AsSdlExt<*mut SDL_Texture> for Texture {
+impl AsSdlExt for Texture {
 
-	fn as_sdl(&self) -> *mut SDL_Texture {
+	type Sdl = *mut SDL_Texture;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_ptr()
 	}
 

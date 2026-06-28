@@ -17,12 +17,15 @@
 /// sdl_assert!(unsafe { SDL_HideWindow(window.as_sdl()) });
 /// assert_eq!(window.visible(), false);
 /// ```
-pub trait AsSdlExt<Sdl> {
+pub trait AsSdlExt {
+
+	/// The underlying SDL representation.
+	type Sdl;
 
 	/// Returns the underlying SDL representation.
 	///
 	/// Note that interfacing with SDL, especially types underlying Kibble types,
 	/// is by nature unsafe.
-	fn as_sdl(&self) -> Sdl;
+	fn as_sdl(&self) -> Self::Sdl;
 
 }

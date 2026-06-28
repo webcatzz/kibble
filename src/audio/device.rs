@@ -99,9 +99,11 @@ impl AudioDevice {
 
 }
 
-impl AsSdlExt<SDL_AudioDeviceID> for AudioDevice {
+impl AsSdlExt for AudioDevice {
 
-	fn as_sdl(&self) -> SDL_AudioDeviceID {
+	type Sdl = SDL_AudioDeviceID;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_sdl()
 	}
 
@@ -149,9 +151,11 @@ impl AudioDeviceId {
 
 }
 
-impl AsSdlExt<SDL_AudioDeviceID> for AudioDeviceId {
+impl AsSdlExt for AudioDeviceId {
 
-	fn as_sdl(&self) -> SDL_AudioDeviceID {
+	type Sdl = SDL_AudioDeviceID;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		SDL_AudioDeviceID(self.0.get())
 	}
 

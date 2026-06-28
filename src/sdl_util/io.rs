@@ -59,9 +59,11 @@ impl<'a, T: Read + Seek> SdlIoStream<'a, T> {
 
 }
 
-impl<'a, T> AsSdlExt<*mut SDL_IOStream> for SdlIoStream<'a, T> {
+impl<'a, T> AsSdlExt for SdlIoStream<'a, T> {
 
-	fn as_sdl(&self) -> *mut SDL_IOStream {
+	type Sdl = *mut SDL_IOStream;
+
+	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_ptr()
 	}
 
