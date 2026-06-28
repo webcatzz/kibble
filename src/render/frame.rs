@@ -105,12 +105,6 @@ impl<'a> Frame<'a> {
 		}
 	}
 
-	/// Returns a clipped area of the frame for rendering.
-	pub fn clip<'r>(&'r mut self, rect: Rect<u32>) -> ClippedFrame<'r, 'a> {
-		sdl_assert!(unsafe { SDL_SetRenderClipRect(self.as_sdl(), &SDL_Rect { x: rect.pos.x as c_int, y: rect.pos.y as c_int, w: rect.size.x as c_int, h: rect.size.y as c_int }) });
-		ClippedFrame(self)
-	}
-
 	/// Clears the frame with a solid color.
 	pub fn clear(&mut self, color: Color<u8>) {
 		sdl_assert!(unsafe { SDL_SetRenderDrawColor(self.as_sdl(), color.r, color.g, color.b, color.a)
@@ -135,34 +129,6 @@ impl<'a> AsSdlExt for Frame<'a> {
 
 	fn as_sdl(&self) -> Self::Sdl {
 		self.0.as_ptr()
-	}
-
-}
-
-pub struct ClippedFrame<'r, 'a>(&'r mut Frame<'a>);
-
-impl<'r, 'a> Deref for ClippedFrame<'r, 'a> {
-
-	type Target = Frame<'a>;
-
-	fn deref(&self) -> &Self::Target {
-		self.0
-	}
-
-}
-
-impl<'r, 'a> DerefMut for ClippedFrame<'r, 'a> {
-
-	fn deref_mut(&mut self) -> &mut Self::Target {
-		self.0
-	}
-
-}
-
-impl<'r, 'a> Drop for ClippedFrame<'r, 'a> {
-
-	fn drop(&mut self) {
-		sdl_assert!(unsafe { SDL_SetRenderClipRect(self.as_sdl(), ptr::null()) })
 	}
 
 }
