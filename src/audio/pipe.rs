@@ -7,9 +7,9 @@ use sdl3_sys::audio::*;
 use crate::audio::{AudioDevice, AudioFormat};
 use crate::sdl_util::{AsSdlExt, sdl_assert, sdl_panic};
 
-/// An audio buffer.
+/// An audio sampler.
 ///
-/// An audio buffer may be connected to an [`AudioDevice`], which will push or
+/// An audio pipe may be connected to an [`AudioDevice`], which will push or
 /// pull audio from the pipe.
 ///
 /// # Examples
