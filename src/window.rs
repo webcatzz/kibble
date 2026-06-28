@@ -1,6 +1,4 @@
 //! Windows.
-//!
-//! See the [`Window`] documentation.
 
 use std::ffi::{c_int, CStr, CString};
 use std::mem::MaybeUninit;
@@ -28,16 +26,18 @@ use crate::thread;
 ///
 /// The window will be automatically closed when dropped.
 ///
-/// To render to the window, use its next [`Frame`]:
+/// To render to the window, create a [`Renderer`]:
 ///
 /// ```
 /// # use kibble::math::{Color, Vec2};
 /// # use kibble::window::Window;
-/// # let mut window = Window::new("title", Vec2 { x: 800, y: 600 });
-/// let frame = window.frame();
+/// # let window = Window::new("title", Vec2 { x: 800, y: 600 });
+/// let renderer = Renderer::new(&window);
 /// ```
 ///
-/// See the [`Frame`] documentation for examples.
+/// See the [`Renderer`] documentation for more.
+///
+/// [`Renderer`]: crate::render::Renderer
 pub struct Window(NonNull<SDL_Window>);
 
 impl Window {

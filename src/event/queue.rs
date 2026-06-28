@@ -11,13 +11,10 @@ use crate::thread;
 use super::Event;
 
 // The event queue could be accessed just by a function, as it is in SDL.
-// Instead, we use a zero-sized type that keeps the event subsystem initialized
-// while in scope, to avoid potentially rapidly initializing and deinitializing
-// the events subsystem each time such a function would be called.
+// Instead, we use a zero-sized type to keep the event subsystem initialized
+// between calls.
 
-/// A handle for the system event queue.
-///
-/// Implements [`Iterator`], allowing events to be filtered, mapped, and counted.
+/// An iterator over the system event queue.
 ///
 /// # Examples
 ///
@@ -36,10 +33,28 @@ use super::Event;
 /// // Consumes the next event
 /// let event = event_queue.next();
 /// // Events can be pattern-matched!
-/// if let Some(Event::Key { down: true, .. }) = event {
-///   println!("You pressed a key!");
+/// if let Some(Event::Key { code: Keycode::SPACE, down: true, .. }) = event {
+///   println!("You pressed the space key!");
 /// }
 /// ```
+///
+/// You might want to handle events in your main loop like this:
+///
+/// ```
+/// loop {
+///   // ...
+///   while let Some(event) = event_queue.next() {
+///      match event {
+///         Event::Quit => return,
+///         // handle other events...
+///         _ => {}
+///      }
+///   }
+///   // ...
+/// }
+/// ```
+///
+/// Your program should exit when it receives [`Event::Quit`].
 pub struct EventQueue(PhantomData<*const ()>); // Phantom pointer for !Send and !Sync
 
 impl EventQueue {

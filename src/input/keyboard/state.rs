@@ -30,9 +30,7 @@ pub unsafe fn reset_keyboard() {
 
 /// The global keyboard state.
 ///
-/// Returned by [`keyboard::state()`].
-///
-/// [`keyboard::state()`]: state
+/// Returned by [`keyboard_state()`].
 #[derive(Clone, Copy)]
 pub struct KeyboardState {
 	ptr: NonNull<bool>,

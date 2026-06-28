@@ -1,6 +1,6 @@
 use super::Vec2;
 
-/// A transformation matrix.
+/// A 2D transformation matrix.
 ///
 /// Transforms are constructed by mutating the identity transform, e.g.:
 ///

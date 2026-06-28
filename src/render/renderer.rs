@@ -10,6 +10,34 @@ use crate::render::{Frame, TextureFilter};
 use crate::sdl_util::{AsSdlExt, sdl_assert, sdl_panic};
 use crate::window::Window;
 
+/// A renderer.
+///
+/// # Examples
+///
+/// To create a renderer:
+///
+/// ```
+/// # use kibble::math::Vec2;
+/// # use kibble::render::Renderer;
+/// # use kibble::window::Window;
+/// let window = Window::new("title", Vec2 { x: 800, y: 600 });
+/// let renderer = Renderer::new(&window);
+/// ```
+///
+/// To draw to the next frame:
+///
+/// ```
+/// # use kibble::math::{Color, Vec2};
+/// # use kibble::render::{Frame, Renderer};
+/// # use kibble::window::Window;
+/// # let window = Window::new("title", Vec2 { x: 800, y: 600 });
+/// let mut renderer = Renderer::new(&window);
+/// let mut frame = renderer.frame();
+/// frame.clear(Color::WHITE);
+/// frame.present();
+/// ```
+///
+/// See the [`Frame`] documentation for more.
 pub struct Renderer(NonNull<SDL_Renderer>);
 
 impl Renderer {
@@ -56,9 +84,9 @@ impl Renderer {
 
 	/// Sets the viewport rendered to by the renderer.
 	///
-	/// When a viewport is set, the renderer will pretend its rendering target is
-	/// always of the given dimensions and then scale up its output to the actual
-	/// output resolution.
+	/// When a viewport is set, the renderer will "pretend" to render at the
+	/// viewport resolution, scaling any coordinates to the actual output
+	/// resolution.
 	pub fn set_viewport(&mut self, viewport: Option<Viewport>) {
 		let w;
 		let h;
@@ -122,16 +150,22 @@ impl Drop for Renderer {
 
 }
 
-/// A viewport rendered to by a renderer.
+/// A logical output size for a renderer.
+///
+/// By default, a renderer renders directly to its output resolution. However,
+/// if a viewport is set with [`Renderer::set_viewport()`], the renderer will
+/// "pretend" to render at the viewport resolution, scaling any coordinates to
+/// the actual output resolution. This is useful for programs that want to
+/// render at a fixed size but scale as needed.
 #[derive(Clone, Copy)]
 pub struct Viewport {
 	/// The size of the viewport.
 	pub size: Vec2<u32>,
-	/// The method by which the viewport is scaled to the output resolution.
+	/// The method used to scale the viewport to the output resolution.
 	pub fit:  ViewportFit,
 }
 
-/// The method by which a viewport is scaled to the output resolution.
+/// A method used to scale a viewport to the output resolution.
 #[repr(i32)]
 #[derive(Clone, Copy)]
 pub enum ViewportFit {
@@ -156,8 +190,8 @@ impl Into<SDL_RendererLogicalPresentation> for ViewportFit {
 
 /// Vertical syncing used when rendering.
 ///
-/// VSync prevents screen tearing by waiting for the display to finish drawing
-/// the current frame before sending the next frame.
+/// Vertical syncing prevents screen tearing by waiting for the display to
+/// finish drawing the current frame before supplying it with the next frame.
 #[derive(Clone, Copy)]
 pub enum VSync {
 	/// Does not sync.

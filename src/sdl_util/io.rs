@@ -9,7 +9,7 @@ use sdl3_sys::iostream::*;
 
 use super::{AsSdlExt, sdl_assert, sdl_panic};
 
-/// An SDL IO stream around a [`Read`] type.
+/// An SDL IO stream for a [`Read`] type.
 ///
 /// The stream will be closed when dropped. SDL may attempt to close the stream,
 /// but it will do nothing.

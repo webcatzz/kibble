@@ -1,32 +1,29 @@
 //! a little game toolkit.
 //!
-//! built on top of [simple directmedia layer] (sdl), a cross-platform
+//! built on top of [simple directmedia layer] (SDL), a cross-platform
 //! development library.
 //!
 //! # why kibble?
 //!
-//! - kibble only provides you tools. you architect as you think best.
+//! - kibble only provides the basics. you architect as you think best.
 //! - kibble is small-by-design. no long compilations, no unneeded features.
-//! - kibble is modular. don't want it? don't need it.
-//! - kibble is built on [sdl], a popular cross-platform library. [anywhere sdl
-//!   can run], kibble can run too.
-//! - kibble is extensible. underlying sdl types are exposed through the
-//!   [`AsSdlExt`] trait.
+//! - kibble is built on [SDL], a popular cross-platform library. [anywhere SDL
+//!   can run], you can run too.
+//! - kibble is extensible. underlying SDL types can be exposed.
 //!
 //! # getting started
 //!
 //! implementing your program's main loop is up to you! all you have to do is
-//! make sure your program exits when told. see the [`event`] documentation for
-//! an example.
+//! make sure your program exits when told (i.e. when it recieves the
+//! [`Event::Quit`] event). see the [`EventQueue`] documentation for examples.
 //!
 //! for more, skim the modules below.
 //!
 //! [simple directmedia layer]: https://www.libsdl.org/
-//! [sdl]: https://www.libsdl.org/
-//! [anywhere sdl can run]: https://wiki.libsdl.org/sdl3/readme-platforms
-//! [`assdlext`]: sdl_util::assdlext
-//! [`run`]: run::run
-//! [`run::run()`]: run::run::run
+//! [SDL]: https://www.libsdl.org/
+//! [anywhere SDL can run]: https://wiki.libsdl.org/sdl3/readme-platforms
+//! [`Event::Quit`]: event::Event::Quit
+//! [`EventQueue`]: event::EventQueue
 
 pub mod input;
 pub mod math;

@@ -11,25 +11,29 @@ use crate::math::{Color, Rect, Vec2};
 use crate::render::Renderer;
 use crate::sdl_util::{AsSdlExt, sdl_assert};
 
-/// A rendering canvas.
+/// A frame of a renderer.
 ///
 /// # Examples
 ///
-/// To get a frame, first open a [`Window`]:
+/// To get a frame, first create a [`Renderer`]:
 ///
 /// ```
 /// # use kibble::math::Vec2;
+/// # use kibble::render::Renderer;
 /// # use kibble::window::Window;
-/// let mut window = Window::new("title", Vec2::ZERO);
-/// let mut frame = window.frame();
+/// let window = Window::new("title", Vec2::ZERO);
+/// let mut renderer = Renderer::new(&window);
+/// let mut frame = renderer.frame();
 /// ```
 ///
 /// To draw to a frame:
 ///
 /// ```
 /// # use kibble::math::{Color, Vec2};
+/// # use kibble::render::Renderer;
 /// # use kibble::window::Window;
-/// # let mut window = Window::new("title", Vec2::ZERO);
+/// # let window = Window::new("title", Vec2::ZERO);
+/// # let mut renderer = Renderer::new(&window);
 /// let mut frame = window.frame();
 /// // Clears the frame to black
 /// frame.clear(Color::BLACK);
@@ -38,8 +42,6 @@ use crate::sdl_util::{AsSdlExt, sdl_assert};
 /// // Presents the frame in its window
 /// frame.present();
 /// ```
-///
-/// [`Window`]: crate::window::Window
 pub struct Frame<'a>(NonNull<SDL_Renderer>, PhantomData<&'a mut Renderer>);
 
 impl<'a> Frame<'a> {

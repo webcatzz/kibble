@@ -14,7 +14,7 @@ use crate::math::{Color, Rect, Transform, Vec2};
 use crate::render::{Frame, Renderer};
 use crate::sdl_util::{AsSdlExt, SdlIoStream, sdl_assert, sdl_panic};
 
-/// A texture used for rendering.
+/// A drawable texture.
 pub struct Texture(NonNull<SDL_Texture>);
 
 impl Texture {
@@ -150,7 +150,7 @@ impl Default for TextureDrawOptions {
 
 }
 
-/// The method by which a texture is sampled.
+/// A method used to sample a texture.
 #[repr(i32)]
 #[derive(Clone, Copy)]
 pub enum TextureFilter {
