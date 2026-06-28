@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 use sdl3_sys::init::SDL_IsMainThread;
 
-use crate::audio::{AudioDevice, AudioDeviceId, AudioFormat};
+use crate::audio::{AudioDevice, AudioFormat};
 use crate::event::EventQueue;
 use crate::input::{self, KeyboardState, MouseState};
 use crate::math::Vec2;
@@ -53,9 +53,9 @@ impl Mtm {
 		unsafe { Window::new_unchecked(title, size) }
 	}
 
-	/// Safe interface for [`AudioDevice::new_unchecked()`].
-	pub fn open_audio_device(self, id: AudioDeviceId, format: Option<AudioFormat>) -> AudioDevice {
-		unsafe { AudioDevice::new_unchecked(id, format) }
+	/// Safe interface for [`AudioDevice::open_unchecked()`].
+	pub fn open_audio_device<const IS_LOGICAL: bool>(self, device: &AudioDevice<IS_LOGICAL>, format: Option<AudioFormat>) -> AudioDevice<true> {
+		unsafe { device.open_unchecked(format) }
 	}
 
 	/// Safe interface for [`input::keyboard_state()`].

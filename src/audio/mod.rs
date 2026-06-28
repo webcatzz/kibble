@@ -3,9 +3,9 @@
 mod audio;
 mod device;
 mod format;
-mod stream;
+mod pipe;
 
-pub use audio::*;
-pub use device::*;
-pub use format::*;
-pub use stream::*;
+pub use audio::Audio;
+pub use device::AudioDevice;
+pub use format::{AudioFormat, AudioSampleFormat};
+pub use pipe::AudioPipe;

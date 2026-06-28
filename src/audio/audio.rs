@@ -9,10 +9,8 @@ use std::slice;
 use sdl3_sys::audio::*;
 use sdl3_sys::stdinc::SDL_free;
 
-use crate::sdl_panic;
-use crate::sdl_util::{AsSdlExt, SdlIoStream, sdl_assert};
-
-use super::AudioFormat;
+use crate::audio::AudioFormat;
+use crate::sdl_util::{AsSdlExt, SdlIoStream, sdl_assert, sdl_panic};
 
 /// Audio data.
 pub struct Audio {
