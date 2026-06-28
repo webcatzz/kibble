@@ -2,11 +2,6 @@
 //!
 //! See the [`Window`] documentation.
 
-#[cfg(feature = "render")]
-mod render;
-#[cfg(feature = "render")]
-pub use render::{Viewport, ViewportFit, VSync};
-
 use std::ffi::{c_int, CStr, CString};
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
@@ -14,7 +9,6 @@ use std::ptr::NonNull;
 use sdl3_sys::init::{SDL_InitSubSystem, SDL_QuitSubSystem, SDL_INIT_VIDEO};
 use sdl3_sys::keyboard::SDL_ScreenKeyboardShown;
 use sdl3_sys::video::*;
-use sdl3_sys::render::*;
 
 use crate::math::Vec2;
 use crate::sdl_util::{self, AsSdlExt, sdl_assert, sdl_panic};
@@ -44,11 +38,7 @@ use crate::thread;
 /// ```
 ///
 /// See the [`Frame`] documentation for examples.
-pub struct Window {
-	sdl_window:   NonNull<SDL_Window>,
-	#[cfg(feature = "render")]
-	sdl_renderer: Option<NonNull<SDL_Renderer>>,
-}
+pub struct Window(NonNull<SDL_Window>);
 
 impl Window {
 
@@ -71,7 +61,7 @@ impl Window {
 	pub unsafe fn new_unchecked(title: &str, size: Vec2<u32>) -> Self {
 		sdl_assert!(unsafe { SDL_InitSubSystem(SDL_INIT_VIDEO) });
 		let Some(sdl_window) = NonNull::new(unsafe { SDL_CreateWindow(CString::new(title).unwrap().as_ptr(), size.x as c_int, size.y as c_int, SDL_WINDOW_HIGH_PIXEL_DENSITY) }) else { sdl_panic!() };
-		Self { sdl_window, sdl_renderer: None }
+		Self(sdl_window)
 	}
 
 	/// Returns the title of the window.
@@ -162,7 +152,7 @@ impl Window {
 impl AsSdlExt<*mut SDL_Window> for Window {
 
 	fn as_sdl(&self) -> *mut SDL_Window {
-		self.sdl_window.as_ptr()
+		self.0.as_ptr()
 	}
 
 }
@@ -171,10 +161,6 @@ impl Drop for Window {
 
 	fn drop(&mut self) {
 		unsafe {
-			#[cfg(feature = "render")]
-			if let Some(sdl_renderer) = self.sdl_renderer {
-				SDL_DestroyRenderer(sdl_renderer.as_ptr());
-			}
 			SDL_DestroyWindow(self.as_sdl());
 			SDL_QuitSubSystem(SDL_INIT_VIDEO);
 			sdl_util::quit_if_unused();

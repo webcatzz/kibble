@@ -11,9 +11,8 @@ use sdl3_image_sys::image::*;
 use sdl3_sys::surface::{SDL_SCALEMODE_LINEAR, SDL_SCALEMODE_NEAREST, SDL_SCALEMODE_PIXELART, SDL_ScaleMode};
 
 use crate::math::{Color, Rect, Transform, Vec2};
+use crate::render::{Frame, Renderer};
 use crate::sdl_util::{AsSdlExt, SdlIoStream, sdl_assert, sdl_panic};
-
-use super::Frame;
 
 /// A texture used for rendering.
 pub struct Texture(NonNull<SDL_Texture>);
@@ -21,15 +20,15 @@ pub struct Texture(NonNull<SDL_Texture>);
 impl Texture {
 
 	/// Loads a texture from a file.
-	pub fn load(path: impl AsRef<Path>, frame: &Frame) -> io::Result<Self> {
+	pub fn load(path: impl AsRef<Path>, renderer: &Renderer) -> io::Result<Self> {
 		let mut file = File::open(path)?;
-		Self::from_bytes(&mut file, frame)
+		Self::from_bytes(&mut file, renderer)
 	}
 
 	/// Reads a texture from bytes.
-	pub fn from_bytes(bytes: &mut (impl Read + Seek), frame: &Frame) -> io::Result<Self> {
+	pub fn from_bytes(bytes: &mut (impl Read + Seek), renderer: &Renderer) -> io::Result<Self> {
 		let stream = SdlIoStream::new_read_seek(bytes);
-		let ptr = unsafe { IMG_LoadTexture_IO(frame.as_sdl(), stream.as_sdl(), false) };
+		let ptr = unsafe { IMG_LoadTexture_IO(renderer.as_sdl(), stream.as_sdl(), false) };
 		let Some(non_null) = NonNull::new(ptr) else { sdl_panic!() };
 		Ok(Texture::from_sdl_texture(non_null))
 	}
