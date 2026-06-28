@@ -48,11 +48,11 @@ pub enum AudioSampleFormat {
 	/// Samples are represented with unsigned 8-bit integers.
 	U8      = SDL_AUDIO_U8.0 as u32,
 	/// Samples are represented with signed 8-bit integers.
-	S8      = SDL_AUDIO_S8.0 as u32,
+	I8      = SDL_AUDIO_S8.0 as u32,
 	/// Samples are represented with signed 16-bit integers.
-	S16     = SDL_AUDIO_S16.0 as u32,
+	I16     = SDL_AUDIO_S16.0 as u32,
 	/// Samples are represented with signed 32-bit integers.
-	S32     = SDL_AUDIO_S32.0 as u32,
+	I32     = SDL_AUDIO_S32.0 as u32,
 	/// Samples are represented with signed 32-bit floating-point numbers.
 	F32     = SDL_AUDIO_F32.0 as u32,
 	/// Unspecified format.
@@ -64,9 +64,9 @@ impl From<SDL_AudioFormat> for AudioSampleFormat {
 	fn from(value: SDL_AudioFormat) -> Self {
 		match value {
 			SDL_AUDIO_U8      => Self::U8,
-			SDL_AUDIO_S8      => Self::S8,
-			SDL_AUDIO_S16     => Self::S16,
-			SDL_AUDIO_S32     => Self::S32,
+			SDL_AUDIO_S8      => Self::I8,
+			SDL_AUDIO_S16     => Self::I16,
+			SDL_AUDIO_S32     => Self::I32,
 			SDL_AUDIO_F32     => Self::F32,
 			SDL_AUDIO_UNKNOWN => Self::Unknown,
 			_                 => panic!("Unknown `SDL_AudioFormat` variant"),
