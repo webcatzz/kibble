@@ -14,17 +14,6 @@ use sdl3_sys::init::{SDL_SetAppMetadataProperty, SDL_PROP_APP_METADATA_COPYRIGHT
 
 use crate::sdl_assert;
 
-/// Sets name, version, and author metadata based on the project's `Cargo.toml`.
-///
-/// - Name metadata is set to `package.name`, if present.
-/// - Version metadata is set to `package.version`, if present.
-/// - Author metadata is set to `package.authors`, if present.
-pub fn set_from_cargo() {
-	if let Some(name)    = option_env!("CARGO_PKG_NAME")    { set_name(name);       }
-	if let Some(version) = option_env!("CARGO_PKG_VERSION") { set_version(version); }
-	if let Some(author)  = option_env!("CARGO_PKG_AUTHORS") { set_author(author);   }
-}
-
 /// Sets the human-readable name of the application, e.g. "My Game 2: Bad Guy's
 /// Revenge".
 ///
