@@ -9,6 +9,7 @@ use sdl3_sys::rect::{SDL_FRect, SDL_Rect};
 use sdl3_sys::render::*;
 
 use crate::math::{Color, Rect, Vec2};
+use crate::render::Renderer;
 use crate::sdl_util::{AsSdlExt, sdl_assert};
 
 /// A rendering canvas.
@@ -40,10 +41,7 @@ use crate::sdl_util::{AsSdlExt, sdl_assert};
 /// ```
 ///
 /// [`Window`]: crate::window::Window
-pub struct Frame<'a> {
-	sdl_renderer: NonNull<SDL_Renderer>,
-	phantom:      PhantomData<&'a ()>,
-}
+pub struct Frame<'a>(NonNull<SDL_Renderer>, PhantomData<&'a mut Renderer>);
 
 impl<'a> Frame<'a> {
 
@@ -118,7 +116,7 @@ impl<'a> Frame<'a> {
 
 	/// Wraps an `SDL_Renderer` pointer in a [`Frame`].
 	pub fn from_sdl_renderer(sdl_renderer: NonNull<SDL_Renderer>) -> Self {
-		Self { sdl_renderer, phantom: PhantomData }
+		Self(sdl_renderer, PhantomData)
 	}
 
 }
