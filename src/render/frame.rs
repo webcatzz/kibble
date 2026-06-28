@@ -1,11 +1,10 @@
-use std::ffi::{c_float, c_int};
+use std::ffi::c_float;
 use std::iter;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-use std::ops::{Deref, DerefMut};
-use std::ptr::{self, NonNull};
+use std::ptr::NonNull;
 
-use sdl3_sys::rect::{SDL_FRect, SDL_Rect};
+use sdl3_sys::rect::SDL_FRect;
 use sdl3_sys::render::*;
 
 use crate::math::{Color, Rect, Vec2};
