@@ -21,7 +21,7 @@ use crate::thread;
 /// ```
 /// # use kibble::audio::AudioDevice;
 /// # use kibble::audio::AudioDeviceId;
-/// let device = AudioDevice::DEFAULT_PLAYBACK.open(None);
+/// let device = AudioDevice::DEFAULT_PLAYBACK.new(None);
 /// ```
 ///
 /// To play or record audio, see the [`AudioPipe`] documentation.
@@ -44,9 +44,9 @@ impl<const IS_LOGICAL: bool> AudioDevice<IS_LOGICAL> {
 	/// # Panics
 	///
 	/// Panics if called outside the main thread.
-	pub fn open(&self, format: Option<AudioFormat>) -> AudioDevice<true> {
+	pub fn new(&self, format: Option<AudioFormat>) -> AudioDevice<true> {
 		assert!(thread::is_main(), "`AudioDevice::new()` should only be called on the main thread");
-		unsafe { self.open_unchecked(format) }
+		unsafe { self.new_unchecked(format) }
 	}
 
 	/// Returns a new logical audio device for the device.
@@ -57,7 +57,7 @@ impl<const IS_LOGICAL: bool> AudioDevice<IS_LOGICAL> {
 	/// # Safety
 	///
 	/// Should only be called on the main thread.
-	pub unsafe fn open_unchecked(&self, format: Option<AudioFormat>) -> AudioDevice<true> {
+	pub unsafe fn new_unchecked(&self, format: Option<AudioFormat>) -> AudioDevice<true> {
 		sdl_assert!(unsafe { SDL_InitSubSystem(SDL_INIT_AUDIO) });
 		let id = unsafe { SDL_OpenAudioDevice(self.as_sdl(), format.map(Into::into).as_ref().map(ptr::from_ref).unwrap_or_default()) };
 		sdl_assert!(id != 0);

@@ -53,9 +53,9 @@ impl Mtm {
 		unsafe { Window::new_unchecked(title, size) }
 	}
 
-	/// Safe interface for [`AudioDevice::open_unchecked()`].
+	/// Safe interface for [`AudioDevice::new_unchecked()`].
 	pub fn open_audio_device<const IS_LOGICAL: bool>(self, device: &AudioDevice<IS_LOGICAL>, format: Option<AudioFormat>) -> AudioDevice<true> {
-		unsafe { device.open_unchecked(format) }
+		unsafe { device.new_unchecked(format) }
 	}
 
 	/// Safe interface for [`input::keyboard_state()`].

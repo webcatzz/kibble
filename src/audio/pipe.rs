@@ -21,7 +21,7 @@ use crate::sdl_util::{AsSdlExt, sdl_assert, sdl_panic};
 /// # let audio_format = AudioFormat { sample_format: AudioSampleFormat::F32, sample_rate: 44100, channel_count: 1 };
 /// # let audio_data = &[];
 /// // Opens a playback device
-/// let audio_device = AudioDevice::DEFAULT_PLAYBACK.open(None);
+/// let audio_device = AudioDevice::DEFAULT_PLAYBACK.new(None);
 /// // Creates an audio pipe
 /// let mut audio_pipe = AudioPipe::new(Some(audio_format), None);
 /// // Connects the pipe to the device
