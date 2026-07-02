@@ -1,7 +1,8 @@
 //! Generic vectors.
 
 use std::ffi::{c_float, c_int};
-use std::fmt;
+use std::fmt::Write;
+use std::{fmt, mem};
 use std::ops::{Add, Sub, Mul, Div, Rem, Neg, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Index, IndexMut};
 
 use num_traits::{ConstOne, ConstZero, Float};
@@ -63,6 +64,24 @@ macro_rules! impl_vector {
 
 		}
 
+		impl<T: Float> $name<T> {
+
+			/// Linearly interpolates between two vectors by the given weight.
+			///
+			/// # Examples
+			///
+			/// ```
+			/// # use kibble::math::Vec2;
+			/// let vec_a = Vec2::of(0.0);
+			/// let vec_b = Vec2::of(1.0);
+			/// assert_eq!(vec_a.lerp(vec_b, 0.5), Vec2::of(0.5));
+			/// ```
+			pub fn lerp(self, to: Self, by: T) -> Self {
+				self + (to - self) * by
+			}
+
+		}
+
 		impl<T: Float + ConstZero> $name<T> {
 
 			/// Returns the length (or magnitude) of the vector.
@@ -89,18 +108,13 @@ macro_rules! impl_vector {
 				}
 			}
 
-			/// Linearly interpolates between two vectors by the given weight.
-			///
-			/// # Examples
-			///
-			/// ```
-			/// # use kibble::math::Vec2;
-			/// let vec_a = Vec2::of(0.0);
-			/// let vec_b = Vec2::of(1.0);
-			/// assert_eq!(vec_a.lerp(vec_b, 0.5), Vec2::of(0.5));
-			/// ```
-			pub fn lerp(self, to: Self, by: T) -> Self {
-				self + (to - self) * by
+		}
+
+		impl<T: Mul + ConstOne> $name<T> {
+
+			/// Returns the product of the vector's components.
+			pub fn area(self) -> T {
+				$( self.$comp * )+ T::ONE
 			}
 
 		}
@@ -467,15 +481,62 @@ impl Into<SDL_FPoint> for Vec2<c_float> {
 
 /// A coordinate axis.
 ///
-/// Used to index vector types, e.g.:
+/// # Examples
+///
+/// To index a vector type:
 ///
 /// ```
 /// # use kibble::math::{Axis, Vec2};
 /// let point = Vec2 { x: 4, y: 3 };
 /// assert_eq!(point[Axis::X], point.x);
+/// assert_eq!(point[Axis::Y], point.y);
 /// ```
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Axis { X, Y, Z, W }
+
+impl Axis {
+
+	/// Returns true if the axis is [`X`] or [`Y`].
+	///
+	/// # Examples
+	///
+	/// ```
+	/// # use kibble::math::Axis;
+	/// assert_eq!(Axis::X.is_2d(), true);
+	/// assert_eq!(Axis::Y.is_2d(), true);
+	/// assert_eq!(Axis::Z.is_2d(), false);
+	/// ```
+	///
+	/// [`X`]: Self::X
+	/// [`Y`]: Self::Y
+	pub fn is_2d(self) -> bool {
+		// TODO check repr not signed
+		const { assert!(Self::X as u8 == 0, "`Axis::X` should have discriminant `0`"); }
+		const { assert!(Self::Y as u8 == 1, "`Axis::Y` should have discriminant `1`"); }
+		self as u8 <= 1
+	}
+
+	/// Returns the perpendicular 2D axis.
+	///
+	/// # Examples
+	///
+	/// ```
+	/// # use kibble::math::Axis;
+	/// assert_eq!(Axis::X.perp2(), Axis::Y);
+	/// assert_eq!(Axis::Y.perp2(), Axis::X);
+	/// ```
+	///
+	/// # Panics
+	///
+	/// Panics if `self` is not [`Axis::X`] or [`Axis::Y`].
+	pub fn perp2(self) -> Self {
+		assert!(self.is_2d(), "`Axis::perp2()` should only be called with `X` or `Y`");
+		const { assert!(Self::X as u8 == 0, "`Axis::X` should have discriminant `0`"); }
+		const { assert!(Self::Y as u8 == 1, "`Axis::Y` should have discriminant `1`"); }
+		unsafe { mem::transmute(1 - self as u8) }
+	}
+
+}
 
 impl fmt::Display for Axis {
 
