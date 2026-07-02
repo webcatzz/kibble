@@ -17,14 +17,14 @@ pub struct Rect<T, U = T> {
 	pub size: Vec2<U>,
 }
 
-impl<T: ConstZero> Rect<T> {
+impl<T: ConstZero, U: ConstZero> Rect<T, U> {
 
 	/// A rectangle starting at the origin with no size.
 	pub const ZERO: Self = Self { pos: Vec2::ZERO, size: Vec2::ZERO };
 
 }
 
-impl<T: ConstOne + ConstZero> Rect<T> {
+impl<T: ConstZero, U: ConstOne> Rect<T, U> {
 
 	/// A one-by-one rectangle starting at the origin.
 	pub const ONE: Self = Self { pos: Vec2::ZERO, size: Vec2::ONE };
