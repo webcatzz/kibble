@@ -36,7 +36,7 @@ impl MouseButton {
 }
 
 /// A bitmask of mouse buttons.
-#[derive(Clone, Copy, PartialEq, Eq, BitAnd, BitOr, BitXor, BitAndAssign, BitOrAssign, BitXorAssign)]
+#[derive(Default, Clone, Copy, PartialEq, Eq, BitAnd, BitOr, BitXor, BitAndAssign, BitOrAssign, BitXorAssign)]
 pub struct MouseButtons(u8);
 
 impl MouseButtons {
