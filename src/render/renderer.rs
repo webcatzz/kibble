@@ -44,6 +44,7 @@ impl Renderer {
 
 	/// Returns a new renderer for the given window.
 	pub fn new(window: &Window) -> Self {
+		// SAFETY: Since `Window` is `!Send` and `!Sync` and can only exist on the main thread, this can only be called on the main thread
 		match NonNull::new(unsafe { SDL_CreateRenderer(window.as_sdl(), ptr::null()) }) {
 			Some(sdl_renderer) => Self(sdl_renderer),
 			None => sdl_panic!(),
@@ -63,6 +64,8 @@ impl Renderer {
 	}
 
 	/// Returns the viewport rendered to by the renderer.
+	///
+	/// By default, no viewport is used.
 	pub fn viewport(&self) -> Option<Viewport> {
 		let mut w = MaybeUninit::uninit();
 		let mut h = MaybeUninit::uninit();
@@ -117,6 +120,8 @@ impl Renderer {
 	}
 
 	/// Returns the vertical syncing used by the renderer.
+	///
+	/// By default, [`VSync::Disabled`] is used.
 	pub fn vsync(&self) -> VSync {
 		let mut vsync = MaybeUninit::uninit();
 		sdl_assert!(unsafe { SDL_GetRenderVSync(self.as_sdl(), vsync.as_mut_ptr()) });
