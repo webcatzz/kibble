@@ -54,6 +54,12 @@ impl Renderer {
 	/// Returns the next frame for rendering.
 	pub fn frame<'a>(&'a mut self) -> Frame<'a> {
 		let mut frame = Frame::from_sdl_renderer(self.0);
+		// Since the renderer state is kept even after `Frame` is dropped, to
+		// avoid unintuitive globally-mutating behavior (i.e. one `Frame`
+		// modifying a later, independent `Frame`), we clear the renderer before
+		// providing access to it. SDL recommends clearing the renderer before
+		// using it anyway, since its backbuffer is invalidated each time its
+		// output is presented.
 		frame.clear(Color::BLACK);
 		frame
 	}
