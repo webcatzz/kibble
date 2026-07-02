@@ -76,6 +76,18 @@ impl Event {
 		}
 	}
 
+	/// Returns the position of the event if it is a mouse event and records the
+	/// given mouse button as down.
+	pub fn mouse_down_pos(&self, button: MouseButton) -> Option<Vec2<f32>> {
+		match self {
+			Self::MouseButton { button: b, down: true, pos } if *b == button =>
+				Some(*pos),
+			Self::MouseMotion { pos, buttons, .. } if buttons.is_down(button) =>
+				Some(*pos),
+			_ => None,
+		}
+	}
+
 	/// Maps the event's mouse position, if any, with the given function.
 	pub fn map_mouse_pos(&mut self, mut f: impl FnMut(Vec2<f32>) -> Vec2<f32>) {
 		match self {
