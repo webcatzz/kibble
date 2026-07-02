@@ -3,14 +3,26 @@ use std::ptr::NonNull;
 
 use sdl3_sys::keyboard::*;
 
+use crate::thread;
+
 use super::Keycode;
+
+/// Returns the global keyboard state.
+///
+/// # Panics
+///
+/// Panics if called outside the main thread.
+pub fn keyboard_state() -> KeyboardState {
+	assert!(thread::is_main(), "`keyboard_state()` should only be called on the main thread");
+	unsafe { keyboard_state_unchecked() }
+}
 
 /// Returns the global keyboard state.
 ///
 /// # Safety
 ///
 /// Should only be called on the main thread.
-pub unsafe fn keyboard_state() -> KeyboardState {
+pub unsafe fn keyboard_state_unchecked() -> KeyboardState {
 	// SAFETY: array returned by `SDL_GetKeyboardState()` is valid for 'static
 	let mut len = MaybeUninit::uninit();
 	let ptr = unsafe { SDL_GetKeyboardState(len.as_mut_ptr()) };
@@ -21,10 +33,22 @@ pub unsafe fn keyboard_state() -> KeyboardState {
 ///
 /// Generates key-up events for all pressed keys.
 ///
+/// # Panics
+///
+/// Panics if called outside the main thread.
+pub fn reset_keyboard() {
+	assert!(thread::is_main(), "`reset_keyboard()` should only be called on the main thread");
+	unsafe { reset_keyboard_unchecked(); }
+}
+
+/// Resets the global keyboard state.
+///
+/// Generates key-up events for all pressed keys.
+///
 /// # Safety
 ///
 /// Should only be called on the main thread.
-pub unsafe fn reset_keyboard() {
+pub unsafe fn reset_keyboard_unchecked() {
 	unsafe { SDL_ResetKeyboard(); }
 }
 
