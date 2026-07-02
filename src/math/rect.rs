@@ -144,6 +144,19 @@ impl<T: Copy + AddAssign + SubAssign + Add<Output = T>> Rect<T> {
 
 }
 
+impl<T: Copy + SubAssign> Rect<T> {
+
+	/// Splits the rectangle into two at the given position along the given axis.
+	pub fn split(mut self, axis: Axis, at: T) -> (Self, Self) {
+		let mut other = self;
+		self.size[axis] = at;
+		other.pos[axis] = at;
+		other.size[axis] -= at;
+		(self, other)
+	}
+
+}
+
 impl Rect<f32> {
 
 	/// Transforms the rectangle.
