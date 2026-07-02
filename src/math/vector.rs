@@ -481,10 +481,10 @@ impl fmt::Display for Axis {
 
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
-			Self::X => write!(f, "X"),
-			Self::Y => write!(f, "Y"),
-			Self::Z => write!(f, "Z"),
-			Self::W => write!(f, "W"),
+			Self::X => f.write_char('X'),
+			Self::Y => f.write_char('Y'),
+			Self::Z => f.write_char('Z'),
+			Self::W => f.write_char('W'),
 		}
 	}
 
