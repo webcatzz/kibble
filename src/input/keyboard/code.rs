@@ -459,6 +459,24 @@ impl Keycode {
 
 }
 
+impl Keycode {
+
+	pub const fn is_num(self) -> bool {
+		self.0 >= Self::NUM_1.0 && self.0 <= Self::NUM_0.0
+	}
+
+	pub const fn as_num(self) -> Option<u8> {
+		match self {
+			Self::NUM_0 =>
+				Some(0),
+			code if code.0 >= Self::NUM_1.0 && code.0 < Self::NUM_0.0 =>
+				Some(code.0 - Self::NUM_1.0),
+			_ => None,
+		}
+	}
+
+}
+
 impl PartialOrd for Keycode {
 
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
