@@ -1,9 +1,11 @@
 //! Generic vectors.
 
+use std::ffi::{c_float, c_int};
 use std::fmt;
 use std::ops::{Add, Sub, Mul, Div, Rem, Neg, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Index, IndexMut};
 
 use num_traits::{ConstOne, ConstZero, Float};
+use sdl3_sys::rect::{SDL_FPoint, SDL_Point};
 
 /// Defines a generic vector type with the given components.
 ///
@@ -407,6 +409,22 @@ impl<T> From<(T, T, T, T)> for Vec4<T> {
 
 }
 
+impl From<SDL_Point> for Vec2<c_int> {
+
+	fn from(value: SDL_Point) -> Self {
+		Self { x: value.x, y: value.y }
+	}
+
+}
+
+impl From<SDL_FPoint> for Vec2<c_float> {
+
+	fn from(value: SDL_FPoint) -> Self {
+		Self { x: value.x, y: value.y }
+	}
+
+}
+
 impl<T> Into<(T, T)> for Vec2<T> {
 
 	fn into(self) -> (T, T) {
@@ -427,6 +445,22 @@ impl<T> Into<(T, T, T, T)> for Vec4<T> {
 
 	fn into(self) -> (T, T, T, T) {
 		(self.x, self.y, self.z, self.w)
+	}
+
+}
+
+impl Into<SDL_Point> for Vec2<c_int> {
+
+	fn into(self) -> SDL_Point {
+		SDL_Point { x: self.x, y: self.y }
+	}
+
+}
+
+impl Into<SDL_FPoint> for Vec2<c_float> {
+
+	fn into(self) -> SDL_FPoint {
+		SDL_FPoint { x: self.x, y: self.y }
 	}
 
 }

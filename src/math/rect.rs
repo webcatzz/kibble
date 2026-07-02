@@ -1,8 +1,10 @@
 //! Generic rectangles.
 
+use std::ffi::{c_float, c_int};
 use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 use num_traits::{ConstOne, ConstZero};
+use sdl3_sys::rect::{SDL_FRect, SDL_Rect};
 
 use super::{Axis, Transform, Vec2};
 
@@ -149,6 +151,38 @@ impl Rect<f32> {
 		self.pos  = transform.transform(self.pos);
 		self.size = transform.multiply(self.size);
 		self
+	}
+
+}
+
+impl From<SDL_Rect> for Rect<c_int> {
+
+	fn from(value: SDL_Rect) -> Self {
+		Self { pos: Vec2 { x: value.x, y: value.y }, size: Vec2 { x: value.w, y: value.h } }
+	}
+
+}
+
+impl From<SDL_FRect> for Rect<c_float> {
+
+	fn from(value: SDL_FRect) -> Self {
+		Self { pos: Vec2 { x: value.x, y: value.y }, size: Vec2 { x: value.w, y: value.h } }
+	}
+
+}
+
+impl Into<SDL_Rect> for Rect<c_int> {
+
+	fn into(self) -> SDL_Rect {
+		SDL_Rect { x: self.pos.x, y: self.pos.y, w: self.size.x, h: self.size.y }
+	}
+
+}
+
+impl Into<SDL_FRect> for Rect<c_float> {
+
+	fn into(self) -> SDL_FRect {
+		SDL_FRect { x: self.pos.x, y: self.pos.y, w: self.size.x, h: self.size.y }
 	}
 
 }
