@@ -15,7 +15,6 @@ serde = { version = "1.0.228", optional = true }
 
 [features]
 default = ["audio", "event", "keyboard", "meta", "mouse", "render", "window"]
-app = []
 audio = []
 event = []
 keyboard = []
