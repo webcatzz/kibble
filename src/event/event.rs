@@ -76,6 +76,16 @@ impl Event {
 		}
 	}
 
+	/// Maps the event's mouse position, if any, with the given function.
+	pub fn map_mouse_pos(&mut self, mut f: impl FnMut(Vec2<f32>) -> Vec2<f32>) {
+		match self {
+			Self::MouseButton { pos, .. } |
+			Self::MouseMotion { pos, .. } =>
+				*pos = f(*pos),
+			_ => {}
+		}
+	}
+
 }
 
 impl TryFrom<SDL_Event> for Event {

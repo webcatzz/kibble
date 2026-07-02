@@ -130,6 +130,22 @@ impl Renderer {
 		sdl_assert!(unsafe { SDL_SetRenderVSync(self.as_sdl(), vsync.into()) });
 	}
 
+	/// Converts from window coordinates to render coordinates.
+	pub fn render_coords_from_window_coords(&self, window_coords: Vec2<f32>) -> Vec2<f32> {
+		let mut x = MaybeUninit::uninit();
+		let mut y = MaybeUninit::uninit();
+		sdl_assert!(unsafe { SDL_RenderCoordinatesFromWindow(self.as_sdl(), window_coords.x as c_float, window_coords.y as c_float, x.as_mut_ptr(), y.as_mut_ptr()) });
+		Vec2 { x: unsafe { x.assume_init() } as f32, y: unsafe { y.assume_init() } as f32 }
+	}
+
+	/// Converts from render coordinates to window coordinates.
+	pub fn window_coords_from_render_coords(&self, render_coords: Vec2<f32>) -> Vec2<f32> {
+		let mut x = MaybeUninit::uninit();
+		let mut y = MaybeUninit::uninit();
+		sdl_assert!(unsafe { SDL_RenderCoordinatesToWindow(self.as_sdl(), render_coords.x as c_float, render_coords.y as c_float, x.as_mut_ptr(), y.as_mut_ptr()) });
+		Vec2 { x: unsafe { x.assume_init() } as f32, y: unsafe { y.assume_init() } as f32 }
+	}
+
 }
 
 impl AsSdlExt for Renderer {
