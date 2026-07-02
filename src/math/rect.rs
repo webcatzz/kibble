@@ -98,8 +98,8 @@ impl<T: Copy + PartialOrd + Add<Output = T>> Rect<T> {
 
 impl<T: Copy + Ord + Add<Output = T> + Sub<Output = T>> Rect<T> {
 
-	/// Returns a new rectangle enclosing a given point.
-	pub fn expand(mut self, pos: Vec2<T>) -> Self {
+	/// Returns a rectangle extended to enclose the given point.
+	pub fn extend_to_point(mut self, pos: Vec2<T>) -> Self {
 		for axis in [Axis::X, Axis::Y] {
 			if pos[axis] < self.pos[axis] {
 				self.pos[axis] = pos[axis];
