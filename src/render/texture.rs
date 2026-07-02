@@ -5,7 +5,6 @@ use std::mem::MaybeUninit;
 use std::path::Path;
 use std::ptr::{self, NonNull};
 
-use sdl3_sys::rect::{SDL_FPoint, SDL_FRect};
 use sdl3_sys::render::*;
 use sdl3_image_sys::image::*;
 use sdl3_sys::surface::{SDL_SCALEMODE_LINEAR, SDL_SCALEMODE_NEAREST, SDL_SCALEMODE_PIXELART, SDL_ScaleMode};
@@ -65,16 +64,40 @@ impl Texture {
 		sdl_assert!(unsafe { SDL_SetTextureScaleMode(self.as_sdl(), filter.into()) });
 	}
 
-	/// Draws the texture to a frame with the given options.
-	pub fn draw(&self, TextureDrawOptions { rect, offset, transform, modulate }: TextureDrawOptions, frame: &mut Frame) {
-		let rect   = rect.unwrap_or_else(|| Rect { pos: Vec2::ZERO, size: self.size().map(|v| v as f32) });
-		let rem    = rect.size + offset;
+	/// Copies a portion of the texture to a frame.
+	///
+	/// If `rect` is [`None`], copies the whole texture.
+	pub fn draw(&self, rect: Option<Rect<f32>>, pos: Vec2<f32>, frame: &mut Frame) {
+		let size = rect.map_or_else(|| self.size().map(|v| v as f32), |rect| rect.size);
+		self.draw_stretched(rect, Some(Rect { pos, size }), frame);
+	}
+
+	/// Stretches a portion of the texture to the given rectangle.
+	///
+	/// - If `src_rect` is [`None`], uses the whole texture.
+	/// - If `dst_rect` is [`None`], stretches to the whole frame.
+	pub fn draw_stretched(&self, src_rect: Option<Rect<f32>>, dst_rect: Option<Rect<f32>>, frame: &mut Frame) {
+		let src_rect = src_rect.map(|rect| rect.map(|v| v as c_float).into());
+		let dst_rect = dst_rect.map(|rect| rect.map(|v| v as c_float).into());
+		sdl_assert!(unsafe { SDL_RenderTexture(frame.as_sdl(), self.as_sdl(), src_rect.as_ref().map_or(ptr::null(), ptr::from_ref), dst_rect.as_ref().map_or(ptr::null(), ptr::from_ref)) });
+	}
+
+	/// Draws the texture to a frame.
+	///
+	/// - `rect` is the portion of the texture to draw. If [`None`], draws the
+	///   whole texture.
+	/// - `offset` is a shift applied to the texture. For example, an offset of
+	///   zero will draw the texture with its top-left corner at the origin, and
+	///   an offset of `self.size() / 2` will draw the texture centered on the
+	///   origin.
+	/// - `transform` is a 2D transformation applied to the texture.
+	pub fn draw_transformed(&self, rect: Option<Rect<f32>>, offset: Vec2<f32>, transform: Transform, frame: &mut Frame) {
+		let rem    = rect.map_or(self.size().map(|v| v as f32), |rect| rect.size) + offset;
 		let origin = transform.transform(offset);
 		let right  = transform.transform(Vec2 { x: rem.x, y: offset.y });
 		let down   = transform.transform(Vec2 { x: offset.x, y: rem.y });
-		unsafe { sdl_assert!(SDL_SetTextureColorMod(self.as_sdl(), modulate.r, modulate.g, modulate.b)
-			&& SDL_SetTextureAlphaMod(self.as_sdl(), modulate.a)
-			&& SDL_RenderTextureAffine(frame.as_sdl(), self.as_sdl(), &SDL_FRect { x: rect.pos.x as c_float, y: rect.pos.y as c_float, w: rect.size.x as c_float, h: rect.size.y as c_float }, &SDL_FPoint { x: origin.x as c_float, y: origin.y as c_float }, &SDL_FPoint { x: right.x as c_float, y: right.y as c_float }, &SDL_FPoint { x: down.x as c_float, y: down.y as c_float })); }
+		let rect = rect.map(|rect| rect.map(|v| v as c_float).into());
+		sdl_assert!(unsafe { SDL_RenderTextureAffine(frame.as_sdl(), self.as_sdl(), rect.as_ref().map_or(ptr::null(), ptr::from_ref), &origin.map(|v| v as c_float).into(), &right.map(|v| v as c_float).into(), &down.map(|v| v as c_float).into()) });
 	}
 
 	/// Wraps an `SDL_Texture` pointer in a [`Texture`].
@@ -123,32 +146,6 @@ impl Drop for Texture {
 
 unsafe impl Send for Texture {}
 unsafe impl Sync for Texture {}
-
-/// Options for drawing a texture.
-#[derive(Clone, Copy)]
-pub struct TextureDrawOptions {
-	/// The portion of the texture to draw. If `None`, uses the full texture.
-	pub rect:      Option<Rect<f32>>,
-	/// The offset applied to the texture.
-	pub offset:    Vec2<f32>,
-	/// The transform applied to the texture.
-	pub transform: Transform,
-	/// The color modulation applied to the texture.
-	pub modulate:  Color<u8>,
-}
-
-impl Default for TextureDrawOptions {
-
-	fn default() -> Self {
-		Self {
-			rect:      None,
-			offset:    Vec2::ZERO,
-			transform: Transform::IDENTITY,
-			modulate:  Color::WHITE,
-		}
-	}
-
-}
 
 /// A method used to sample a texture.
 #[repr(i32)]
