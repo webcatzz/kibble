@@ -10,6 +10,7 @@ use super::Vec2;
 /// let transform = Transform::IDENTITY.rotated(PI);
 /// ```
 #[derive(Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Transform {
 	m11: f32, m12: f32,
 	m21: f32, m22: f32,

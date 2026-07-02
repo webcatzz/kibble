@@ -10,6 +10,7 @@ use super::{Axis, Transform, Vec2};
 
 /// A rectangle.
 #[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Rect<T, U = T> {
 	/// The top-left corner of the rectangle.
 	pub pos:  Vec2<T>,

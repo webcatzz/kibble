@@ -11,6 +11,7 @@ futures = { version = "0.3.32", optional = true }
 num-traits = "0.2.19"
 sdl3-image-sys = "0.6.2"
 sdl3-sys = "0.6.3"
+serde = { version = "1.0.228", optional = true }
 
 [features]
 default = ["audio", "event", "keyboard", "meta", "mouse", "render", "window"]

@@ -7,6 +7,7 @@ use num_traits::Float;
 
 /// An RGBA color.
 #[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Color<C> {
 	/// The red component of the color.
 	pub r: C,

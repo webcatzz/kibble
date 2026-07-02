@@ -20,6 +20,7 @@ macro_rules! impl_vector {
 
 		$( #[$attr] )*
 		#[derive(Default, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
+		#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 		pub struct $name<T> {
 			$( pub $comp: T, )+
 		}
