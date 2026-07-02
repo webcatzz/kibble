@@ -38,6 +38,7 @@ use crate::window::Window;
 /// ```
 ///
 /// See the [`Frame`] documentation for more.
+#[repr(transparent)] // Required for `Frame` `Deref` implementation
 pub struct Renderer(NonNull<SDL_Renderer>);
 
 impl Renderer {

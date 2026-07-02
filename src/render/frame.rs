@@ -2,6 +2,7 @@ use std::ffi::c_float;
 use std::iter;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
+use std::ops::Deref;
 use std::ptr::NonNull;
 
 use sdl3_sys::rect::SDL_FRect;
@@ -118,6 +119,19 @@ impl<'a> Frame<'a> {
 	/// Wraps an `SDL_Renderer` pointer in a [`Frame`].
 	pub fn from_sdl_renderer(sdl_renderer: NonNull<SDL_Renderer>) -> Self {
 		Self(sdl_renderer, PhantomData)
+	}
+
+}
+
+impl<'a> Deref for Frame<'a> {
+
+	type Target = Renderer;
+
+	fn deref(&self) -> &Self::Target {
+		// SAFETY: `Renderer` is a `repr(transparent)` wrapper around a single
+		// `NonNull<SDL_Renderer>`, so a pointer to the `NonNull<SDL_Renderer>`
+		// inside `Frame` is the same as a pointer to a `Renderer`.
+		unsafe { (&raw const self.0 as *const Renderer).as_ref_unchecked() }
 	}
 
 }
