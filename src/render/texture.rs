@@ -64,6 +64,23 @@ impl Texture {
 		sdl_assert!(unsafe { SDL_SetTextureScaleMode(self.as_sdl(), filter.into()) });
 	}
 
+	/// Returns the color multiplied with the texture when drawn.
+	pub fn modulate(&self) -> Color<u8> {
+		let mut r = MaybeUninit::uninit();
+		let mut g = MaybeUninit::uninit();
+		let mut b = MaybeUninit::uninit();
+		let mut a = MaybeUninit::uninit();
+		sdl_assert!(unsafe { SDL_GetTextureColorMod(self.as_sdl(), r.as_mut_ptr(), g.as_mut_ptr(), b.as_mut_ptr())
+			&& SDL_GetTextureAlphaMod(self.as_sdl(), a.as_mut_ptr()) });
+		Color { r: unsafe { r.assume_init() }, g: unsafe { g.assume_init() }, b: unsafe { b.assume_init() }, a: unsafe { a.assume_init() } }
+	}
+
+	/// Sets the color multiplied with the texture when drawn.
+	pub fn set_modulate(&mut self, modulate: Color<u8>) {
+		sdl_assert!(unsafe { SDL_SetTextureColorMod(self.as_sdl(), modulate.r, modulate.g, modulate.b)
+			&& SDL_SetTextureAlphaMod(self.as_sdl(), modulate.a) });
+	}
+
 	/// Copies a portion of the texture to a frame.
 	///
 	/// If `rect` is [`None`], copies the whole texture.
