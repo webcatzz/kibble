@@ -38,12 +38,12 @@ impl<T: Copy + Add<Output = T>> Rect<T> {
 		self.pos + self.size
 	}
 
-	/// Returns the `x` coordinate of the bottom-right corner of a rectangle.
+	/// Returns the `x` coordinate of the bottom-right corner of the rectangle.
 	pub fn end_x(&self) -> T {
 		self.pos.x + self.size.x
 	}
 
-	/// Returns the `y` coordinate of the bottom-right corner of a rectangle.
+	/// Returns the `y` coordinate of the bottom-right corner of the rectangle.
 	pub fn end_y(&self) -> T {
 		self.pos.y + self.size.y
 	}
@@ -56,14 +56,8 @@ impl<T> Rect<T> {
 	#[inline]
 	pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
 		Rect {
-			pos: Vec2 {
-				x: f(self.pos.x),
-				y: f(self.pos.y),
-			},
-			size: Vec2 {
-				x: f(self.size.x),
-				y: f(self.size.y),
-			},
+			pos:  Vec2 { x: f(self.pos.x),  y: f(self.pos.y),  },
+			size: Vec2 { x: f(self.size.x), y: f(self.size.y), },
 		}
 	}
 
@@ -80,7 +74,7 @@ impl<T> Rect<T> {
 
 impl<T: Copy + Mul<Output = T>> Rect<T> {
 
-	/// Returns the area of a rectangle.
+	/// Returns the area of the rectangle.
 	pub fn area(&self) -> T {
 		self.size.x * self.size.y
 	}
@@ -89,7 +83,7 @@ impl<T: Copy + Mul<Output = T>> Rect<T> {
 
 impl<T: Copy + PartialOrd + Add<Output = T>> Rect<T> {
 
-	/// Returns true if a point is within a given rectangle.
+	/// Returns true if the given point is within the rectangle.
 	pub fn contains_point(self, point: Vec2<T>) -> bool {
 		point >= self.pos && point <= self.end()
 	}
@@ -114,24 +108,24 @@ impl<T: Copy + Ord + Add<Output = T> + Sub<Output = T>> Rect<T> {
 
 impl<T: Copy + AddAssign + SubAssign + Add<Output = T>> Rect<T> {
 
-	/// Expands a rectangle by the given amount.
+	/// Expands the rectangle by the given amount on all sides.
 	pub fn grow(mut self, by: T) -> Self {
 		let vec = Vec2::of(by);
-		self.pos -= vec;
+		self.pos  -= vec;
 		self.size += vec + vec;
 		self
 	}
 
-	/// Expands a rectangle by discrete amounts for each side.
+	/// Expands the rectangle on each side by the given amounts.
 	pub fn grow_sides(mut self, top: T, right: T, bottom: T, left: T) -> Self {
-		self.pos.x -= left;
-		self.pos.y -= top;
+		self.pos.x  -= left;
+		self.pos.y  -= top;
 		self.size.x += left + right;
 		self.size.y += top + bottom;
 		self
 	}
 
-	/// Expands one side of a rectangle.
+	/// Expands the rectangle on one side by the given amount.
 	pub fn grow_side(mut self, dir: Dir, by: T) -> Self {
 		match dir {
 			Dir::Left  => self.pos.x  -= by,
