@@ -44,7 +44,7 @@ pub struct Renderer(NonNull<SDL_Renderer>);
 impl Renderer {
 
 	/// Returns a new renderer for the given window.
-	pub fn new(window: &Window) -> Self {
+	pub fn new(window: &mut Window) -> Self {
 		// SAFETY: Since `Window` is `!Send` and `!Sync` and can only exist on the main thread, this can only be called on the main thread
 		match NonNull::new(unsafe { SDL_CreateRenderer(window.as_sdl(), ptr::null()) }) {
 			Some(sdl_renderer) => Self(sdl_renderer),
