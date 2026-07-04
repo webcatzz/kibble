@@ -85,9 +85,14 @@ macro_rules! impl_vector {
 
 		impl<T: Float + ConstZero> $name<T> {
 
+			/// Returns the length (or magnitude) of the vector, squared.
+			pub fn length_squared(self) -> T {
+				$( self.$comp * self.$comp + )+ T::ZERO
+			}
+
 			/// Returns the length (or magnitude) of the vector.
 			pub fn length(self) -> T {
-				($( self.$comp * self.$comp + )+ T::ZERO).sqrt()
+				self.length_squared().sqrt()
 			}
 
 			/// Scales the vector to unit length. Returns [`ZERO`] if the vector's
