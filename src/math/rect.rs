@@ -1,6 +1,7 @@
 //! Generic rectangles.
 
 use std::ffi::{c_float, c_int};
+use std::fmt;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 use num_traits::{ConstOne, ConstZero};
@@ -159,6 +160,14 @@ impl Rect<f32> {
 		self.pos  = transform.transform(self.pos);
 		self.size = transform.multiply(self.size);
 		self
+	}
+
+}
+
+impl<T: fmt::Display> fmt::Display for Rect<T> {
+
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "({}, {})", self.pos, self.size)
 	}
 
 }

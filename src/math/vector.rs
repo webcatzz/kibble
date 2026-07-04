@@ -283,7 +283,7 @@ macro_rules! impl_vector {
 
 		}
 
-		impl<T: fmt::Display> fmt::Debug for $name<T> {
+		impl<T: fmt::Display> fmt::Display for $name<T> {
 
 			fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 				write!(f, "(")?;
