@@ -3,6 +3,7 @@ use std::mem::MaybeUninit;
 use std::num::NonZero;
 use std::ptr::{self, NonNull};
 
+use sdl3_sys::blendmode::SDL_BLENDMODE_BLEND;
 use sdl3_sys::render::*;
 
 use crate::math::{Color, Vec2};
@@ -46,10 +47,9 @@ impl Renderer {
 	/// Returns a new renderer for the given window.
 	pub fn new(window: &mut Window) -> Self {
 		// SAFETY: Since `Window` is `!Send` and `!Sync` and can only exist on the main thread, this can only be called on the main thread
-		match NonNull::new(unsafe { SDL_CreateRenderer(window.as_sdl(), ptr::null()) }) {
-			Some(sdl_renderer) => Self(sdl_renderer),
-			None => sdl_panic!(),
-		}
+		let Some(sdl_renderer) = NonNull::new(unsafe { SDL_CreateRenderer(window.as_sdl(), ptr::null()) }) else { sdl_panic!() };
+		sdl_assert!(unsafe { SDL_SetRenderDrawBlendMode(sdl_renderer.as_ptr(), SDL_BLENDMODE_BLEND) });
+		Self(sdl_renderer)
 	}
 
 	/// Returns the next frame for rendering.
