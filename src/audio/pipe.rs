@@ -82,14 +82,6 @@ impl AudioPipe {
 		sdl_assert!(unsafe { SDL_PutAudioStreamData(self.as_sdl(), data.as_ptr() as *const c_void, c_int::try_from(data.len()).expect("the length of `data` should not exceed `c_int::MAX`")) });
 	}
 
-	/// Pushes data into the audio pipe so that only up to `total` total bytes
-	/// are queued. Returns the number of pushed bytes.
-	pub fn fill(&mut self, data: &[u8], total: usize) -> usize {
-		let bytes_needed = total.saturating_sub(self.bytes_queued());
-		self.push(&data[..bytes_needed.min(data.len())]);
-		bytes_needed
-	}
-
 	/// Clears any data in the audio pipe.
 	pub fn clear(&mut self) {
 		sdl_assert!(unsafe { SDL_ClearAudioStream(self.as_sdl()) });
