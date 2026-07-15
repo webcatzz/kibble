@@ -55,7 +55,7 @@ impl AudioPipe {
 	///
 	/// If unset, the input or output format of the pipe will be automatically
 	/// detected from the given recording or playback device, respectively.
-	pub fn connect<const IS_LOGICAL: bool>(&mut self, device: &AudioDevice<IS_LOGICAL>) {
+	pub fn connect(&mut self, device: &AudioDevice<true>) {
 		sdl_assert!(unsafe { SDL_BindAudioStream(device.as_sdl(), self.as_sdl()) });
 	}
 
