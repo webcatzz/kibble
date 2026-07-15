@@ -90,7 +90,7 @@ impl Transform {
 
 	/// Transforms a point.
 	pub fn transform(self, vector: Vec2<f32>) -> Vec2<f32> {
-		self.multiply(vector) + self.multiply(self.translation)
+		self.multiply(vector) + self.translation
 	}
 
 }
