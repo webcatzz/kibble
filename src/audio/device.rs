@@ -16,7 +16,7 @@ use crate::thread;
 ///
 /// # Examples
 ///
-/// To open the default playback device:
+/// To open the system's default playback device:
 ///
 /// ```
 /// # use kibble::audio::AudioDevice;
@@ -24,22 +24,26 @@ use crate::thread;
 /// let device = AudioDevice::DEFAULT_PLAYBACK.new(None);
 /// ```
 ///
-/// To play or record audio, see the [`AudioPipe`] documentation.
+/// To play or record audio, connect an [`AudioPipe`].
 ///
 /// [`AudioPipe`]: crate::audio::AudioPipe
-pub struct AudioDevice<const IS_LOGICAL: bool>(SDL_AudioDeviceID);
+pub struct AudioDevice<const IS_LOGICAL: bool = true>(SDL_AudioDeviceID);
+
+impl AudioDevice<false> {
+
+	/// The default audio playback device.
+	pub const DEFAULT_PLAYBACK: Self = AudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
+	/// The default audio recording device.
+	pub const DEFAULT_RECORDING: Self = AudioDevice(SDL_AUDIO_DEVICE_DEFAULT_RECORDING);
+
+}
 
 impl<const IS_LOGICAL: bool> AudioDevice<IS_LOGICAL> {
 
-	/// The default audio playback device.
-	pub const DEFAULT_PLAYBACK: AudioDevice<false> = AudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
-	/// The default audio recording device.
-	pub const DEFAULT_RECORDING: AudioDevice<false> = AudioDevice(SDL_AUDIO_DEVICE_DEFAULT_RECORDING);
-
 	/// Returns a new logical audio device for the device.
 	///
-	/// You may request a specific format for the new device. The request may not
-	/// be honored. If `format` is `None`, uses a reasonable default.
+	/// You may request a specific format for the new device; the request may not
+	/// be honored. If `None`, uses a reasonable default.
 	///
 	/// # Panics
 	///
@@ -77,7 +81,7 @@ impl AudioDevice<true> {
 
 	/// Returns `true` if the device is paused.
 	///
-	/// New devices are unpaused by default.
+	/// By default, devices are unpaused.
 	pub fn is_paused(&self) -> bool {
 		unsafe { SDL_AudioDevicePaused(self.as_sdl()) }
 	}
