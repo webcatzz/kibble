@@ -14,7 +14,7 @@ use super::Vec2;
 pub struct Transform {
 	m11: f32, m12: f32,
 	m21: f32, m22: f32,
-	translation: Vec2<f32>,
+	pub translation: Vec2<f32>,
 }
 
 impl Transform {
@@ -63,11 +63,6 @@ impl Transform {
 			m22: self.m21 * other.m12 + self.m22 * other.m22,
 			translation: self.translation + other.translation,
 		}
-	}
-
-	/// Returns the translation of a transform.
-	pub fn translation(self) -> Vec2<f32> {
-		self.translation
 	}
 
 	/// Returns `true` if the transform only encodes a translation.
