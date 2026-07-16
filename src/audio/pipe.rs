@@ -35,10 +35,10 @@ impl AudioPipe {
 
 	/// Returns a new audio pipe with the given input and output formats.
 	///
-	/// Either format may be `None`, but attempting to push or pull audio from
-	/// the pipe will fail unless both formats are set. If unset, the input or
-	/// output format will be automatically detected when the pipe is connected
-	/// to a recording or playback device, respectively.
+	/// If either format is `None`, attempting to push or pull audio from the
+	/// pipe will fail. However, if `None`, the input or output format can be
+	/// automatically detected when the pipe is connected to a recording or
+	/// playback device, respectively.
 	pub fn new(input_format: Option<AudioFormat>, output_format: Option<AudioFormat>) -> Self {
 		let ptr = unsafe { SDL_CreateAudioStream(input_format.map(Into::into).as_ref().map(ptr::from_ref).unwrap_or_default(), output_format.map(Into::into).as_ref().map(ptr::from_ref).unwrap_or_default()) };
 		let Some(non_null) = NonNull::new(ptr) else { sdl_panic!() };
